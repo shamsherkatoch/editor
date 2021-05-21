@@ -2,172 +2,209 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "storageAccounts_sagrsauacdevstar_name": {
-            "defaultValue": "sagrsauacdevstar",
+        "vaults_kv_auac_dev_star_name": {
+            "defaultValue": "kv-auac-dev-star",
             "type": "String"
         },
-        "virtualNetworks_vnet_auac_dev_dev_externalid": {
-            "defaultValue": "/subscriptions/0f1c5e89-3639-4a79-aaa8-5fe6f67d2935/resourceGroups/rg-auac-dev-network/providers/Microsoft.Network/virtualNetworks/vnet-auac-dev-dev",
+        "virtualnetworks_vnet_auac_dev_dev_externalid": {
+            "defaultValue": "/subscriptions/0f1c5e89-3639-4a79-aaa8-5fe6f67d2935/resourceGroups/rg-auac-dev-network/providers/microsoft.network/virtualnetworks/vnet-auac-dev-dev",
+            "type": "String"
+        },
+        "virtualnetworks_vnet_auac2_dev_dev_externalid": {
+            "defaultValue": "/subscriptions/0f1c5e89-3639-4a79-aaa8-5fe6f67d2935/resourceGroups/rg-auac2-network/providers/microsoft.network/virtualnetworks/vnet-auac2-dev-dev",
             "type": "String"
         }
     },
     "variables": {},
     "resources": [
         {
-            "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2021-02-01",
-            "name": "[parameters('storageAccounts_sagrsauacdevstar_name')]",
+            "type": "Microsoft.KeyVault/vaults",
+            "apiVersion": "2021-04-01-preview",
+            "name": "[parameters('vaults_kv_auac_dev_star_name')]",
             "location": "australiacentral",
             "tags": {
-                "Application": "",
-                "Environment": "Dev"
+                "Application": "Star",
+                "Assigned To": "IR SYSTEM"
             },
-            "sku": {
-                "name": "Standard_RAGRS",
-                "tier": "Standard"
-            },
-            "kind": "StorageV2",
             "properties": {
-                "minimumTlsVersion": "TLS1_2",
-                "allowBlobPublicAccess": false,
-                "allowSharedKeyAccess": true,
+                "sku": {
+                    "family": "A",
+                    "name": "Standard"
+                },
+                "tenantId": "5d2dd196-0646-4419-8922-440f7d464cf0",
                 "networkAcls": {
-                    "resourceAccessRules": [],
                     "bypass": "AzureServices",
+                    "defaultAction": "Deny",
+                    "ipRules": [],
                     "virtualNetworkRules": [
                         {
-                            "id": "[concat(parameters('virtualNetworks_vnet_auac_dev_dev_externalid'), '/subnets/apps-dev')]",
-                            "action": "Allow",
-                            "state": "Succeeded"
+                            "id": "[concat(parameters('virtualnetworks_vnet_auac_dev_dev_externalid'), '/subnets/star-pvtedp')]",
+                            "ignoreMissingVnetServiceEndpoint": false
                         },
                         {
-                            "id": "[concat(parameters('virtualNetworks_vnet_auac_dev_dev_externalid'), '/subnets/star-pvtEdp')]",
-                            "action": "Allow",
-                            "state": "Succeeded"
+                            "id": "[concat(parameters('virtualnetworks_vnet_auac_dev_dev_externalid'), '/subnets/star-vntint')]",
+                            "ignoreMissingVnetServiceEndpoint": false
                         },
                         {
-                            "id": "[concat(parameters('virtualNetworks_vnet_auac_dev_dev_externalid'), '/subnets/star-vntInt')]",
-                            "action": "Allow",
-                            "state": "Succeeded"
+                            "id": "[concat(parameters('virtualnetworks_vnet_auac2_dev_dev_externalid'), '/subnets/star-pvtedp')]",
+                            "ignoreMissingVnetServiceEndpoint": false
+                        },
+                        {
+                            "id": "[concat(parameters('virtualnetworks_vnet_auac2_dev_dev_externalid'), '/subnets/star-vntint')]",
+                            "ignoreMissingVnetServiceEndpoint": false
                         }
-                    ],
-                    "ipRules": [
-                        {
-                            "value": "101.167.224.99",
-                            "action": "Allow"
-                        },
-                        {
-                            "value": "101.167.224.100",
-                            "action": "Allow"
-                        },
-                        {
-                            "value": "101.167.224.101",
-                            "action": "Allow"
-                        }
-                    ],
-                    "defaultAction": "Deny"
+                    ]
                 },
-                "supportsHttpsTrafficOnly": true,
-                "encryption": {
-                    "services": {
-                        "file": {
-                            "keyType": "Account",
-                            "enabled": true
-                        },
-                        "table": {
-                            "keyType": "Account",
-                            "enabled": true
-                        },
-                        "queue": {
-                            "keyType": "Account",
-                            "enabled": true
-                        },
-                        "blob": {
-                            "keyType": "Account",
-                            "enabled": true
+                "accessPolicies": [
+                    {
+                        "tenantId": "5d2dd196-0646-4419-8922-440f7d464cf0",
+                        "objectId": "f6d4d428-7c8b-482e-a45a-46c60cde669b",
+                        "permissions": {
+                            "keys": [
+                                "Get",
+                                "List",
+                                "Update",
+                                "Create",
+                                "Import"
+                            ],
+                            "secrets": [
+                                "Get",
+                                "List",
+                                "Set"
+                            ],
+                            "certificates": []
                         }
                     },
-                    "keySource": "Microsoft.Storage"
-                },
-                "accessTier": "Hot"
-            }
-        },
-        {
-            "type": "Microsoft.Storage/storageAccounts/blobServices",
-            "apiVersion": "2021-02-01",
-            "name": "[concat(parameters('storageAccounts_sagrsauacdevstar_name'), '/default')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sagrsauacdevstar_name'))]"
-            ],
-            "sku": {
-                "name": "Standard_RAGRS",
-                "tier": "Standard"
-            },
-            "properties": {
-                "changeFeed": {
-                    "enabled": false
-                },
-                "restorePolicy": {
-                    "enabled": false
-                },
-                "cors": {
-                    "corsRules": []
-                },
-                "deleteRetentionPolicy": {
-                    "enabled": true,
-                    "days": 7
-                },
-                "isVersioningEnabled": false
-            }
-        },
-        {
-            "type": "Microsoft.Storage/storageAccounts/fileServices",
-            "apiVersion": "2021-02-01",
-            "name": "[concat(parameters('storageAccounts_sagrsauacdevstar_name'), '/default')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sagrsauacdevstar_name'))]"
-            ],
-            "sku": {
-                "name": "Standard_RAGRS",
-                "tier": "Standard"
-            },
-            "properties": {
-                "protocolSettings": {
-                    "smb": {}
-                },
-                "cors": {
-                    "corsRules": []
-                },
-                "shareDeleteRetentionPolicy": {
-                    "enabled": true,
-                    "days": 7
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Storage/storageAccounts/queueServices",
-            "apiVersion": "2021-02-01",
-            "name": "[concat(parameters('storageAccounts_sagrsauacdevstar_name'), '/default')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sagrsauacdevstar_name'))]"
-            ],
-            "properties": {
-                "cors": {
-                    "corsRules": []
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Storage/storageAccounts/tableServices",
-            "apiVersion": "2021-02-01",
-            "name": "[concat(parameters('storageAccounts_sagrsauacdevstar_name'), '/default')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sagrsauacdevstar_name'))]"
-            ],
-            "properties": {
-                "cors": {
-                    "corsRules": []
-                }
+                    {
+                        "tenantId": "5d2dd196-0646-4419-8922-440f7d464cf0",
+                        "objectId": "ef571623-2d8a-4175-bdd9-da45127dc57c",
+                        "permissions": {
+                            "keys": [
+                                "Get",
+                                "List",
+                                "Update",
+                                "Create",
+                                "Import",
+                                "Delete",
+                                "Recover",
+                                "Backup",
+                                "Restore",
+                                "UnwrapKey",
+                                "WrapKey"
+                            ],
+                            "secrets": [
+                                "Get",
+                                "List",
+                                "Set",
+                                "Delete",
+                                "Recover",
+                                "Backup",
+                                "Restore"
+                            ],
+                            "certificates": []
+                        }
+                    },
+                    {
+                        "tenantId": "5d2dd196-0646-4419-8922-440f7d464cf0",
+                        "objectId": "3f09a786-56ba-4b7f-bee3-baa344130eca",
+                        "permissions": {
+                            "keys": [
+                                "Get",
+                                "List",
+                                "Update",
+                                "Create",
+                                "Import",
+                                "Delete",
+                                "Recover",
+                                "Backup",
+                                "Restore",
+                                "Purge"
+                            ],
+                            "secrets": [
+                                "Get",
+                                "List",
+                                "Set",
+                                "Delete",
+                                "Recover",
+                                "Backup",
+                                "Restore",
+                                "Purge"
+                            ],
+                            "certificates": [
+                                "Get",
+                                "List",
+                                "Update",
+                                "Create",
+                                "Import",
+                                "Delete",
+                                "Recover",
+                                "Backup",
+                                "Restore",
+                                "ManageIssuers",
+                                "GetIssuers",
+                                "ListIssuers",
+                                "SetIssuers",
+                                "DeleteIssuers",
+                                "Purge",
+                                "ManageContacts"
+                            ]
+                        }
+                    },
+                    {
+                        "tenantId": "5d2dd196-0646-4419-8922-440f7d464cf0",
+                        "objectId": "06c03331-d98a-4ab2-a9a4-118a7268c744",
+                        "permissions": {
+                            "keys": [
+                                "Get",
+                                "List",
+                                "Update",
+                                "Create",
+                                "Import",
+                                "Delete",
+                                "Recover",
+                                "Backup",
+                                "Restore",
+                                "Purge"
+                            ],
+                            "secrets": [
+                                "Get",
+                                "List",
+                                "Set",
+                                "Delete",
+                                "Recover",
+                                "Backup",
+                                "Restore",
+                                "Purge"
+                            ],
+                            "certificates": [
+                                "Get",
+                                "List",
+                                "Update",
+                                "Create",
+                                "Import",
+                                "Delete",
+                                "Recover",
+                                "Backup",
+                                "Restore",
+                                "ManageContacts",
+                                "ManageIssuers",
+                                "GetIssuers",
+                                "ListIssuers",
+                                "SetIssuers",
+                                "DeleteIssuers",
+                                "Purge"
+                            ]
+                        }
+                    }
+                ],
+                "enabledForDeployment": false,
+                "enabledForDiskEncryption": false,
+                "enabledForTemplateDeployment": true,
+                "enableSoftDelete": true,
+                "softDeleteRetentionInDays": 90,
+                "enableRbacAuthorization": false,
+                "vaultUri": "[concat('https://', parameters('vaults_kv_auac_dev_star_name'), '.vault.azure.net/')]",
+                "provisioningState": "Succeeded"
             }
         }
     ]
