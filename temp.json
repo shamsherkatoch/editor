@@ -1,162 +1,160 @@
-
 {
-    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "location": {
-            "type": "string"
+        "storageAccounts_sagrsauacdevstar_name": {
+            "defaultValue": "sagrsauacdevstar",
+            "type": "String"
         },
-        "storageAccountName": {
-            "type": "string"
-        },
-        "accountType": {
-            "type": "string"
-        },
-        "kind": {
-            "type": "string"
-        },
-        "accessTier": {
-            "type": "string"
-        },
-        "minimumTlsVersion": {
-            "type": "string"
-        },
-        "supportsHttpsTrafficOnly": {
-            "type": "bool"
-        },
-        "allowBlobPublicAccess": {
-            "type": "bool"
-        },
-        "allowSharedKeyAccess": {
-            "type": "bool"
-        },
-        "networkAclsBypass": {
-            "type": "string"
-        },
-        "networkAclsDefaultAction": {
-            "type": "string"
-        },
-        "networkAclsVirtualNetworkRules": {
-            "type": "array"
-        },
-        "keySource": {
-            "type": "string"
-        },
-        "encryptionEnabled": {
-            "type": "bool"
-        },
-        "keyTypeForTableAndQueueEncryption": {
-            "type": "string"
-        },
-        "isContainerRestoreEnabled": {
-            "type": "bool"
-        },
-        "isBlobSoftDeleteEnabled": {
-            "type": "bool"
-        },
-        "blobSoftDeleteRetentionDays": {
-            "type": "int"
-        },
-        "changeFeed": {
-            "type": "bool"
-        },
-        "isVersioningEnabled": {
-            "type": "bool"
-        },
-        "isShareSoftDeleteEnabled": {
-            "type": "bool"
-        },
-        "shareSoftDeleteRetentionDays": {
-            "type": "int"
+        "virtualNetworks_vnet_auac_dev_dev_externalid": {
+            "defaultValue": "/subscriptions/0f1c5e89-3639-4a79-aaa8-5fe6f67d2935/resourceGroups/rg-auac-dev-network/providers/Microsoft.Network/virtualNetworks/vnet-auac-dev-dev",
+            "type": "String"
         }
     },
     "variables": {},
     "resources": [
         {
-            "name": "[parameters('storageAccountName')]",
             "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2019-06-01",
-            "location": "[parameters('location')]",
-            "properties": {
-                "accessTier": "[parameters('accessTier')]",
-                "minimumTlsVersion": "[parameters('minimumTlsVersion')]",
-                "supportsHttpsTrafficOnly": "[parameters('supportsHttpsTrafficOnly')]",
-                "allowBlobPublicAccess": "[parameters('allowBlobPublicAccess')]",
-                "allowSharedKeyAccess": "[parameters('allowSharedKeyAccess')]",
-                "networkAcls": {
-                    "bypass": "[parameters('networkAclsBypass')]",
-                    "defaultAction": "[parameters('networkAclsDefaultAction')]",
-                    "ipRules": [],
-                    "virtualNetworkRules": "[parameters('networkAclsVirtualNetworkRules')]"
-                },
-                "encryption": {
-                    "keySource": "[parameters('keySource')]",
-                    "services": {
-                        "blob": {
-                            "enabled": "[parameters('encryptionEnabled')]"
-                        },
-                        "file": {
-                            "enabled": "[parameters('encryptionEnabled')]"
-                        },
-                        "queue": {
-                            "enabled": "[parameters('encryptionEnabled')]",
-                            "keyType": "[parameters('keyTypeForTableAndQueueEncryption')]"
-                        },
-                        "table": {
-                            "enabled": "[parameters('encryptionEnabled')]",
-                            "keyType": "[parameters('keyTypeForTableAndQueueEncryption')]"
-                        }
-                    }
-                }
-            },
-            "dependsOn": [
-                "Microsoft.Resources/deployments/virtualNetworks_0.6672717545558298"
-            ],
-            "sku": {
-                "name": "[parameters('accountType')]"
-            },
-            "kind": "[parameters('kind')]",
+            "apiVersion": "2021-02-01",
+            "name": "[parameters('storageAccounts_sagrsauacdevstar_name')]",
+            "location": "australiacentral",
             "tags": {
                 "Application": "",
                 "Environment": "Dev"
+            },
+            "sku": {
+                "name": "Standard_RAGRS",
+                "tier": "Standard"
+            },
+            "kind": "StorageV2",
+            "properties": {
+                "minimumTlsVersion": "TLS1_2",
+                "allowBlobPublicAccess": false,
+                "allowSharedKeyAccess": true,
+                "networkAcls": {
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [
+                        {
+                            "id": "[concat(parameters('virtualNetworks_vnet_auac_dev_dev_externalid'), '/subnets/apps-dev')]",
+                            "action": "Allow",
+                            "state": "Succeeded"
+                        },
+                        {
+                            "id": "[concat(parameters('virtualNetworks_vnet_auac_dev_dev_externalid'), '/subnets/star-vntInt')]",
+                            "action": "Allow",
+                            "state": "Succeeded"
+                        },
+                        {
+                            "id": "[concat(parameters('virtualNetworks_vnet_auac_dev_dev_externalid'), '/subnets/star-pvtEdp')]",
+                            "action": "Allow",
+                            "state": "Succeeded"
+                        }
+                    ],
+                    "ipRules": [],
+                    "defaultAction": "Deny"
+                },
+                "supportsHttpsTrafficOnly": true,
+                "encryption": {
+                    "services": {
+                        "file": {
+                            "keyType": "Account",
+                            "enabled": true
+                        },
+                        "table": {
+                            "keyType": "Account",
+                            "enabled": true
+                        },
+                        "queue": {
+                            "keyType": "Account",
+                            "enabled": true
+                        },
+                        "blob": {
+                            "keyType": "Account",
+                            "enabled": true
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                },
+                "accessTier": "Hot"
             }
         },
         {
-            "name": "[concat(parameters('storageAccountName'), '/default')]",
             "type": "Microsoft.Storage/storageAccounts/blobServices",
-            "apiVersion": "2019-06-01",
+            "apiVersion": "2021-02-01",
+            "name": "[concat(parameters('storageAccounts_sagrsauacdevstar_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sagrsauacdevstar_name'))]"
+            ],
+            "sku": {
+                "name": "Standard_RAGRS",
+                "tier": "Standard"
+            },
             "properties": {
+                "changeFeed": {
+                    "enabled": false
+                },
                 "restorePolicy": {
-                    "enabled": "[parameters('isContainerRestoreEnabled')]"
+                    "enabled": false
+                },
+                "cors": {
+                    "corsRules": []
                 },
                 "deleteRetentionPolicy": {
-                    "enabled": "[parameters('isBlobSoftDeleteEnabled')]",
-                    "days": "[parameters('blobSoftDeleteRetentionDays')]"
+                    "enabled": true,
+                    "days": 7
                 },
-                "changeFeed": {
-                    "enabled": "[parameters('changeFeed')]"
-                },
-                "isVersioningEnabled": "[parameters('isVersioningEnabled')]"
-            },
-            "dependsOn": [
-                "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]"
-            ]
+                "isVersioningEnabled": false
+            }
         },
         {
-            "name": "[concat(parameters('storageAccountName'), '/default')]",
-            "type": "Microsoft.Storage/storageAccounts/fileservices",
-            "apiVersion": "2019-06-01",
-            "properties": {
-                "shareDeleteRetentionPolicy": {
-                    "enabled": "[parameters('isShareSoftDeleteEnabled')]",
-                    "days": "[parameters('shareSoftDeleteRetentionDays')]"
-                }
-            },
+            "type": "Microsoft.Storage/storageAccounts/fileServices",
+            "apiVersion": "2021-02-01",
+            "name": "[concat(parameters('storageAccounts_sagrsauacdevstar_name'), '/default')]",
             "dependsOn": [
-                "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]",
-                "[concat(concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName')), '/blobServices/default')]"
-            ]
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sagrsauacdevstar_name'))]"
+            ],
+            "sku": {
+                "name": "Standard_RAGRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "protocolSettings": {
+                    "smb": {}
+                },
+                "cors": {
+                    "corsRules": []
+                },
+                "shareDeleteRetentionPolicy": {
+                    "enabled": true,
+                    "days": 7
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/queueServices",
+            "apiVersion": "2021-02-01",
+            "name": "[concat(parameters('storageAccounts_sagrsauacdevstar_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sagrsauacdevstar_name'))]"
+            ],
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/tableServices",
+            "apiVersion": "2021-02-01",
+            "name": "[concat(parameters('storageAccounts_sagrsauacdevstar_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sagrsauacdevstar_name'))]"
+            ],
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
         }
-    ],
-    "outputs": {}
+    ]
 }
