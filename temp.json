@@ -32,6 +32,7 @@
                 "allowBlobPublicAccess": false,
                 "allowSharedKeyAccess": true,
                 "networkAcls": {
+                    "resourceAccessRules": [],
                     "bypass": "AzureServices",
                     "virtualNetworkRules": [
                         {
@@ -40,17 +41,30 @@
                             "state": "Succeeded"
                         },
                         {
-                            "id": "[concat(parameters('virtualNetworks_vnet_auac_dev_dev_externalid'), '/subnets/star-vntInt')]",
+                            "id": "[concat(parameters('virtualNetworks_vnet_auac_dev_dev_externalid'), '/subnets/star-pvtEdp')]",
                             "action": "Allow",
                             "state": "Succeeded"
                         },
                         {
-                            "id": "[concat(parameters('virtualNetworks_vnet_auac_dev_dev_externalid'), '/subnets/star-pvtEdp')]",
+                            "id": "[concat(parameters('virtualNetworks_vnet_auac_dev_dev_externalid'), '/subnets/star-vntInt')]",
                             "action": "Allow",
                             "state": "Succeeded"
                         }
                     ],
-                    "ipRules": [],
+                    "ipRules": [
+                        {
+                            "value": "101.167.224.99",
+                            "action": "Allow"
+                        },
+                        {
+                            "value": "101.167.224.100",
+                            "action": "Allow"
+                        },
+                        {
+                            "value": "101.167.224.101",
+                            "action": "Allow"
+                        }
+                    ],
                     "defaultAction": "Deny"
                 },
                 "supportsHttpsTrafficOnly": true,
