@@ -25,12 +25,6 @@
         },
         "use32BitWorkerProcess": {
             "type": "bool"
-        },
-        "resourceTags": {
-            "type": "object"
-        },
-        "nodeVersion": {
-            "type": "string"
         }
     },
     "resources": [
@@ -40,10 +34,11 @@
             "type": "Microsoft.Web/sites",
             "kind": "functionapp,workflowapp",
             "location": "[parameters('location')]",
-            "tags": "[parameters('resourceTags')]",
+            "tags": {
+                "AssignedTo": "IR SYSTEM"
+            },
             "dependsOn": [
-                "[concat('microsoft.insights/components/', parameters('name'))]",
-                "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]"
+                "microsoft.insights/components/devemailsender-auac"
             ],
             "properties": {
                 "name": "[parameters('name')]",
@@ -63,15 +58,23 @@
                         },
                         {
                             "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                            "value": "[reference(concat('microsoft.insights/components/', parameters('name')), '2015-05-01').InstrumentationKey]"
+                            "value": "[reference('microsoft.insights/components/devemailsender-auac', '2015-05-01').InstrumentationKey]"
                         },
                         {
                             "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
-                            "value": "[reference(concat('microsoft.insights/components/', parameters('name')), '2015-05-01').ConnectionString]"
+                            "value": "[reference('microsoft.insights/components/devemailsender-auac', '2015-05-01').ConnectionString]"
                         },
                         {
                             "name": "AzureWebJobsStorage",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').keys[0].value,';EndpointSuffix=','core.windows.net')]"
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=',listKeys(resourceId('0f1c5e89-3639-4a79-aaa8-5fe6f67d2935','rg-auac-dev-webapp-star','Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').keys[0].value,';EndpointSuffix=','core.windows.net')]"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=',listKeys(resourceId('0f1c5e89-3639-4a79-aaa8-5fe6f67d2935','rg-auac-dev-webapp-star','Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').keys[0].value,';EndpointSuffix=','core.windows.net')]"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTSHARE",
+                            "value": "[concat(toLower(parameters('name')), 'a789')]"
                         },
                         {
                             "name": "AzureFunctionsJobHost__extensionBundle__id",
@@ -84,24 +87,9 @@
                         {
                             "name": "APP_KIND",
                             "value": "workflowApp"
-                        },
-                        {
-                            "name": "FUNCTIONS_V2_COMPATIBILITY_MODE",
-                            "value": "true"
                         }
                     ],
-                    "use32BitWorkerProcess": "[parameters('use32BitWorkerProcess')]",
-                    "alwaysOn": "[parameters('alwaysOn')]",
-                    "cors": {
-                        "allowedOrigins": [
-                            "https://afd.hosting.portal.azure.net",
-                            "https://afd.hosting-ms.portal.azure.net",
-                            "https://hosting.portal.azure.net",
-                            "https://ms.hosting.portal.azure.net",
-                            "https://ema-ms.hosting.portal.azure.net",
-                            "https://ema.hosting.portal.azure.net"
-                        ]
-                    }
+                    "use32BitWorkerProcess": "[parameters('use32BitWorkerProcess')]"
                 },
                 "serverFarmId": "[concat('/subscriptions/', parameters('subscriptionId'),'/resourcegroups/', parameters('serverFarmResourceGroup'), '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]",
                 "clientAffinityEnabled": false
@@ -112,30 +100,19 @@
         },
         {
             "apiVersion": "2020-02-02-preview",
-            "name": "[parameters('name')]",
+            "name": "devemailsender-auac",
             "type": "microsoft.insights/components",
-            "location": "[parameters('location')]",
-            "tags": "[parameters('resourceTags')]",
+            "location": "australiacentral",
+            "tags": {
+                "AssignedTo": "IR SYSTEM"
+            },
             "dependsOn": [],
             "properties": {
                 "ApplicationId": "[parameters('name')]",
                 "Request_Source": "IbizaWebAppExtensionCreate",
                 "Flow_Type": "Redfield",
-                "Application_Type": "web"
-            }
-        },
-        {
-            "apiVersion": "2019-06-01",
-            "type": "Microsoft.Storage/storageAccounts",
-            "name": "[parameters('storageAccountName')]",
-            "location": "[parameters('location')]",
-            "tags": "[parameters('resourceTags')]",
-            "sku": {
-                "name": "Standard_LRS"
-            },
-            "properties": {
-                "supportsHttpsTrafficOnly": true,
-                "minimumTlsVersion": "TLS1_2"
+                "Application_Type": "web",
+                "WorkspaceResourceId": "/subscriptions/0f1c5e89-3639-4a79-aaa8-5fe6f67d2935/resourcegroups/defaultresourcegroup-cbr2/providers/microsoft.operationalinsights/workspaces/defaultworkspace-0f1c5e89-3639-4a79-aaa8-5fe6f67d2935-cbr2"
             }
         }
     ]
