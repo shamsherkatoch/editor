@@ -1,210 +1,141 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "vaults_kv_auac_dev_star_name": {
-            "defaultValue": "kv-auac-dev-star",
-            "type": "String"
+        "subscriptionId": {
+            "type": "string"
         },
-        "virtualnetworks_vnet_auac_dev_dev_externalid": {
-            "defaultValue": "/subscriptions/0f1c5e89-3639-4a79-aaa8-5fe6f67d2935/resourceGroups/rg-auac-dev-network/providers/microsoft.network/virtualnetworks/vnet-auac-dev-dev",
-            "type": "String"
+        "name": {
+            "type": "string"
         },
-        "virtualnetworks_vnet_auac2_dev_dev_externalid": {
-            "defaultValue": "/subscriptions/0f1c5e89-3639-4a79-aaa8-5fe6f67d2935/resourceGroups/rg-auac2-network/providers/microsoft.network/virtualnetworks/vnet-auac2-dev-dev",
-            "type": "String"
+        "location": {
+            "type": "string"
+        },
+        "hostingPlanName": {
+            "type": "string"
+        },
+        "serverFarmResourceGroup": {
+            "type": "string"
+        },
+        "alwaysOn": {
+            "type": "bool"
+        },
+        "storageAccountName": {
+            "type": "string"
+        },
+        "use32BitWorkerProcess": {
+            "type": "bool"
+        },
+        "resourceTags": {
+            "type": "object"
+        },
+        "nodeVersion": {
+            "type": "string"
         }
     },
-    "variables": {},
     "resources": [
         {
-            "type": "Microsoft.KeyVault/vaults",
-            "apiVersion": "2021-04-01-preview",
-            "name": "[parameters('vaults_kv_auac_dev_star_name')]",
-            "location": "australiacentral",
-            "tags": {
-                "Application": "Star",
-                "Assigned To": "IR SYSTEM"
+            "apiVersion": "2018-11-01",
+            "name": "[parameters('name')]",
+            "type": "Microsoft.Web/sites",
+            "kind": "functionapp,workflowapp",
+            "location": "[parameters('location')]",
+            "tags": "[parameters('resourceTags')]",
+            "dependsOn": [
+                "[concat('microsoft.insights/components/', parameters('name'))]",
+                "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]"
+            ],
+            "properties": {
+                "name": "[parameters('name')]",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~3"
+                        },
+                        {
+                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                            "value": "node"
+                        },
+                        {
+                            "name": "WEBSITE_NODE_DEFAULT_VERSION",
+                            "value": "~12"
+                        },
+                        {
+                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                            "value": "[reference(concat('microsoft.insights/components/', parameters('name')), '2015-05-01').InstrumentationKey]"
+                        },
+                        {
+                            "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                            "value": "[reference(concat('microsoft.insights/components/', parameters('name')), '2015-05-01').ConnectionString]"
+                        },
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').keys[0].value,';EndpointSuffix=','core.windows.net')]"
+                        },
+                        {
+                            "name": "AzureFunctionsJobHost__extensionBundle__id",
+                            "value": "Microsoft.Azure.Functions.ExtensionBundle.Workflows"
+                        },
+                        {
+                            "name": "AzureFunctionsJobHost__extensionBundle__version",
+                            "value": "[1.*, 2.0.0)"
+                        },
+                        {
+                            "name": "APP_KIND",
+                            "value": "workflowApp"
+                        },
+                        {
+                            "name": "FUNCTIONS_V2_COMPATIBILITY_MODE",
+                            "value": "true"
+                        }
+                    ],
+                    "use32BitWorkerProcess": "[parameters('use32BitWorkerProcess')]",
+                    "alwaysOn": "[parameters('alwaysOn')]",
+                    "cors": {
+                        "allowedOrigins": [
+                            "https://afd.hosting.portal.azure.net",
+                            "https://afd.hosting-ms.portal.azure.net",
+                            "https://hosting.portal.azure.net",
+                            "https://ms.hosting.portal.azure.net",
+                            "https://ema-ms.hosting.portal.azure.net",
+                            "https://ema.hosting.portal.azure.net"
+                        ]
+                    }
+                },
+                "serverFarmId": "[concat('/subscriptions/', parameters('subscriptionId'),'/resourcegroups/', parameters('serverFarmResourceGroup'), '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]",
+                "clientAffinityEnabled": false
+            },
+            "identity": {
+                "type": "SystemAssigned"
+            }
+        },
+        {
+            "apiVersion": "2020-02-02-preview",
+            "name": "[parameters('name')]",
+            "type": "microsoft.insights/components",
+            "location": "[parameters('location')]",
+            "tags": "[parameters('resourceTags')]",
+            "dependsOn": [],
+            "properties": {
+                "ApplicationId": "[parameters('name')]",
+                "Request_Source": "IbizaWebAppExtensionCreate",
+                "Flow_Type": "Redfield",
+                "Application_Type": "web"
+            }
+        },
+        {
+            "apiVersion": "2019-06-01",
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[parameters('storageAccountName')]",
+            "location": "[parameters('location')]",
+            "tags": "[parameters('resourceTags')]",
+            "sku": {
+                "name": "Standard_LRS"
             },
             "properties": {
-                "sku": {
-                    "family": "A",
-                    "name": "Standard"
-                },
-                "tenantId": "5d2dd196-0646-4419-8922-440f7d464cf0",
-                "networkAcls": {
-                    "bypass": "AzureServices",
-                    "defaultAction": "Deny",
-                    "ipRules": [],
-                    "virtualNetworkRules": [
-                        {
-                            "id": "[concat(parameters('virtualnetworks_vnet_auac_dev_dev_externalid'), '/subnets/star-pvtedp')]",
-                            "ignoreMissingVnetServiceEndpoint": false
-                        },
-                        {
-                            "id": "[concat(parameters('virtualnetworks_vnet_auac_dev_dev_externalid'), '/subnets/star-vntint')]",
-                            "ignoreMissingVnetServiceEndpoint": false
-                        },
-                        {
-                            "id": "[concat(parameters('virtualnetworks_vnet_auac2_dev_dev_externalid'), '/subnets/star-pvtedp')]",
-                            "ignoreMissingVnetServiceEndpoint": false
-                        },
-                        {
-                            "id": "[concat(parameters('virtualnetworks_vnet_auac2_dev_dev_externalid'), '/subnets/star-vntint')]",
-                            "ignoreMissingVnetServiceEndpoint": false
-                        }
-                    ]
-                },
-                "accessPolicies": [
-                    {
-                        "tenantId": "5d2dd196-0646-4419-8922-440f7d464cf0",
-                        "objectId": "f6d4d428-7c8b-482e-a45a-46c60cde669b",
-                        "permissions": {
-                            "keys": [
-                                "Get",
-                                "List",
-                                "Update",
-                                "Create",
-                                "Import"
-                            ],
-                            "secrets": [
-                                "Get",
-                                "List",
-                                "Set"
-                            ],
-                            "certificates": []
-                        }
-                    },
-                    {
-                        "tenantId": "5d2dd196-0646-4419-8922-440f7d464cf0",
-                        "objectId": "ef571623-2d8a-4175-bdd9-da45127dc57c",
-                        "permissions": {
-                            "keys": [
-                                "Get",
-                                "List",
-                                "Update",
-                                "Create",
-                                "Import",
-                                "Delete",
-                                "Recover",
-                                "Backup",
-                                "Restore",
-                                "UnwrapKey",
-                                "WrapKey"
-                            ],
-                            "secrets": [
-                                "Get",
-                                "List",
-                                "Set",
-                                "Delete",
-                                "Recover",
-                                "Backup",
-                                "Restore"
-                            ],
-                            "certificates": []
-                        }
-                    },
-                    {
-                        "tenantId": "5d2dd196-0646-4419-8922-440f7d464cf0",
-                        "objectId": "3f09a786-56ba-4b7f-bee3-baa344130eca",
-                        "permissions": {
-                            "keys": [
-                                "Get",
-                                "List",
-                                "Update",
-                                "Create",
-                                "Import",
-                                "Delete",
-                                "Recover",
-                                "Backup",
-                                "Restore",
-                                "Purge"
-                            ],
-                            "secrets": [
-                                "Get",
-                                "List",
-                                "Set",
-                                "Delete",
-                                "Recover",
-                                "Backup",
-                                "Restore",
-                                "Purge"
-                            ],
-                            "certificates": [
-                                "Get",
-                                "List",
-                                "Update",
-                                "Create",
-                                "Import",
-                                "Delete",
-                                "Recover",
-                                "Backup",
-                                "Restore",
-                                "ManageIssuers",
-                                "GetIssuers",
-                                "ListIssuers",
-                                "SetIssuers",
-                                "DeleteIssuers",
-                                "Purge",
-                                "ManageContacts"
-                            ]
-                        }
-                    },
-                    {
-                        "tenantId": "5d2dd196-0646-4419-8922-440f7d464cf0",
-                        "objectId": "06c03331-d98a-4ab2-a9a4-118a7268c744",
-                        "permissions": {
-                            "keys": [
-                                "Get",
-                                "List",
-                                "Update",
-                                "Create",
-                                "Import",
-                                "Delete",
-                                "Recover",
-                                "Backup",
-                                "Restore",
-                                "Purge"
-                            ],
-                            "secrets": [
-                                "Get",
-                                "List",
-                                "Set",
-                                "Delete",
-                                "Recover",
-                                "Backup",
-                                "Restore",
-                                "Purge"
-                            ],
-                            "certificates": [
-                                "Get",
-                                "List",
-                                "Update",
-                                "Create",
-                                "Import",
-                                "Delete",
-                                "Recover",
-                                "Backup",
-                                "Restore",
-                                "ManageContacts",
-                                "ManageIssuers",
-                                "GetIssuers",
-                                "ListIssuers",
-                                "SetIssuers",
-                                "DeleteIssuers",
-                                "Purge"
-                            ]
-                        }
-                    }
-                ],
-                "enabledForDeployment": false,
-                "enabledForDiskEncryption": false,
-                "enabledForTemplateDeployment": true,
-                "enableSoftDelete": true,
-                "softDeleteRetentionInDays": 90,
-                "enableRbacAuthorization": false,
-                "vaultUri": "[concat('https://', parameters('vaults_kv_auac_dev_star_name'), '.vault.azure.net/')]",
-                "provisioningState": "Succeeded"
+                "supportsHttpsTrafficOnly": true,
+                "minimumTlsVersion": "TLS1_2"
             }
         }
     ]
