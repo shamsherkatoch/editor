@@ -1,118 +1,58 @@
 {
-    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "subscriptionId": {
-            "type": "string"
-        },
-        "name": {
-            "type": "string"
-        },
-        "location": {
-            "type": "string"
-        },
-        "hostingPlanName": {
-            "type": "string"
-        },
-        "serverFarmResourceGroup": {
-            "type": "string"
-        },
-        "alwaysOn": {
-            "type": "bool"
-        },
-        "storageAccountName": {
-            "type": "string"
-        },
-        "use32BitWorkerProcess": {
-            "type": "bool"
+        "workflows_devemailsender_auae_name": {
+            "defaultValue": "devemailsender-auae",
+            "type": "String"
         }
     },
+    "variables": {},
     "resources": [
         {
-            "apiVersion": "2018-11-01",
-            "name": "[parameters('name')]",
-            "type": "Microsoft.Web/sites",
-            "kind": "functionapp,workflowapp",
-            "location": "[parameters('location')]",
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "name": "[parameters('workflows_devemailsender_auae_name')]",
+            "location": "australiaeast",
             "tags": {
-                "AssignedTo": "IR SYSTEM"
-            },
-            "dependsOn": [
-                "microsoft.insights/components/devemailsender-auac"
-            ],
-            "properties": {
-                "name": "[parameters('name')]",
-                "siteConfig": {
-                    "appSettings": [
-                        {
-                            "name": "FUNCTIONS_EXTENSION_VERSION",
-                            "value": "~3"
-                        },
-                        {
-                            "name": "FUNCTIONS_WORKER_RUNTIME",
-                            "value": "node"
-                        },
-                        {
-                            "name": "WEBSITE_NODE_DEFAULT_VERSION",
-                            "value": "~12"
-                        },
-                        {
-                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                            "value": "[reference('microsoft.insights/components/devemailsender-auac', '2015-05-01').InstrumentationKey]"
-                        },
-                        {
-                            "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
-                            "value": "[reference('microsoft.insights/components/devemailsender-auac', '2015-05-01').ConnectionString]"
-                        },
-                        {
-                            "name": "AzureWebJobsStorage",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=',listKeys(resourceId('0f1c5e89-3639-4a79-aaa8-5fe6f67d2935','rg-auac-dev-webapp-star','Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').keys[0].value,';EndpointSuffix=','core.windows.net')]"
-                        },
-                        {
-                            "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=',listKeys(resourceId('0f1c5e89-3639-4a79-aaa8-5fe6f67d2935','rg-auac-dev-webapp-star','Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').keys[0].value,';EndpointSuffix=','core.windows.net')]"
-                        },
-                        {
-                            "name": "WEBSITE_CONTENTSHARE",
-                            "value": "[concat(toLower(parameters('name')), 'a789')]"
-                        },
-                        {
-                            "name": "AzureFunctionsJobHost__extensionBundle__id",
-                            "value": "Microsoft.Azure.Functions.ExtensionBundle.Workflows"
-                        },
-                        {
-                            "name": "AzureFunctionsJobHost__extensionBundle__version",
-                            "value": "[1.*, 2.0.0)"
-                        },
-                        {
-                            "name": "APP_KIND",
-                            "value": "workflowApp"
-                        }
-                    ],
-                    "use32BitWorkerProcess": "[parameters('use32BitWorkerProcess')]"
-                },
-                "serverFarmId": "[concat('/subscriptions/', parameters('subscriptionId'),'/resourcegroups/', parameters('serverFarmResourceGroup'), '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]",
-                "clientAffinityEnabled": false
+                "CreatedBy": "Infraops DevOps 2019 CICD",
+                "Application": "STAR",
+                "AssignedTo": "IR SYSTEMS",
+                "Environment": "Dev"
             },
             "identity": {
-                "type": "SystemAssigned"
-            }
-        },
-        {
-            "apiVersion": "2020-02-02-preview",
-            "name": "devemailsender-auac",
-            "type": "microsoft.insights/components",
-            "location": "australiacentral",
-            "tags": {
-                "AssignedTo": "IR SYSTEM"
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                    "/subscriptions/0f1c5e89-3639-4a79-aaa8-5fe6f67d2935/resourcegroups/rg-auae-dev-webapp-star/providers/microsoft.managedidentity/userassignedidentities/mi-auae-dev-star": {
+                        "principalId": "bf7f46fc-fdf0-4d35-8586-b98e521927aa",
+                        "clientId": "a4f0a6ae-be1d-44b2-975d-29a045a33e91"
+                    }
+                }
             },
-            "dependsOn": [],
             "properties": {
-                "ApplicationId": "[parameters('name')]",
-                "Request_Source": "IbizaWebAppExtensionCreate",
-                "Flow_Type": "Redfield",
-                "Application_Type": "web",
-                "WorkspaceResourceId": "/subscriptions/0f1c5e89-3639-4a79-aaa8-5fe6f67d2935/resourcegroups/defaultresourcegroup-cbr2/providers/microsoft.operationalinsights/workspaces/defaultworkspace-0f1c5e89-3639-4a79-aaa8-5fe6f67d2935-cbr2"
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "triggers": {
+                        "recurrence": {
+                            "recurrence": {
+                                "frequency": "Hour",
+                                "interval": 1
+                            },
+                            "type": "Recurrence"
+                        }
+                    },
+                    "actions": {
+                        "actionType": {
+                            "type": "Http",
+                            "inputs": {
+                                "method": "GET",
+                                "uri": "http://status.azure.com/en-us/status/"
+                            }
+                        }
+                    }
+                },
+                "parameters": {}
             }
         }
     ]
