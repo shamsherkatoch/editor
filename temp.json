@@ -1,51 +1,56 @@
 {
-    "apiVersion": "2017-05-10",
-    "name": "DNSARecord",
-    "type": "Microsoft.Resources/deployments",
-    "resourceGroup": "<resourcegroup-where-the-dns-zone-lives>",
-    "subscriptionId": "<subscription-where-the-dns-zone-lives>",
+    "type": "Microsoft.KeyVault/vaults",
+    "apiVersion": "2019-09-01",
+    "name": "[variables('keyVaultName')]",
+    "location": "[variables('location')]",
+    "properties": {
+        "tenantId": "[variables('tenantid')]",
+        "sku": {
+            "name": "standard",
+            "family": "A"
+        },
+        "enabledForDeployment": false,
+        "enabledForDiskEncryption": false,
+        "enabledForTemplateDeployment": true,
+        "enableSoftDelete": true,
+        "accessPolicies": "[variables('accessPolicies')]"
+    }
+},
+{
+    "type": "Microsoft.Network/privateEndpoints",
+    "apiVersion": "2020-05-01",
+    "name": "[variables('privateEndpointName')]",
+    "location": "[variables('location')]",
     "dependsOn": [
-        "[variables('privateEndpointName')]"
+        "[variables('keyVaultName')]"
     ],
     "properties": {
-        "mode": "Incremental",
-        "expressionEvaluationOptions": {
-            "scope": "inner"
+        "subnet": {
+            "id": "[resourceId(parameters('virtualNetworkResourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnetName'))]"
         },
-        "parameters": {
-            "recordName": {
-                "value": "[variables('keyVaultName')]"
-            },
-            "NetworkInterfaceId": {
-                "value": "[reference(variables('privateEndpointName')).networkInterfaces[0].id]"
+        "privateLinkServiceConnections": [
+            {
+                "name": "[variables('privateEndpointName')]",
+                "properties": {
+                    "privateLinkServiceId": "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
+                    "groupIds": [
+                        "vault"
+                    ]
+                }
             }
-        },
-        "template": {
-            "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
-            "contentVersion": "1.0.0.0",
-            "parameters": {
-                "recordName": {
-                    "type": "string"
-                },
-                "NetworkInterfaceId": {
-                    "type": "string"
-                }
-            },
-            "resources": [
-                {
-                    "type": "Microsoft.Network/privateDnsZones/A",
-                    "apiVersion": "2018-09-01",
-                    "name": "[concat('privatelink.vaultcore.azure.net', '/', parameters('recordName'))]",
-                    "properties": {
-                        "ttl": 30,
-                        "aRecords": [
-                            {
-                                "ipv4Address": "[reference(parameters('NetworkInterfaceId'), '2020-05-01', 'Full').properties.ipConfigurations[0].properties.privateIPAddress]"
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
+        ]
+    }
+},
+{
+    "type": "Microsoft.Network/privateDnsZones/A",
+    "apiVersion": "2018-09-01",
+    "name": "[concat('privatelink.vaultcore.azure.net', '/', variables('keyVaultName'))]",
+    "properties": {
+        "ttl": 30,
+        "aRecords": [
+            {
+                "ipv4Address": "[reference(variables('privateEndpointName'), '2020-05-01', 'Full').networkInterfaces[0].properties.ipConfigurations[0].properties.privateIPAddress]"
+            }
+        ]
     }
 }
