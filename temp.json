@@ -2,23 +2,23 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-    "virtualNetworkResourceGroupName": {
-      "type": "string",
-      "metadata": {
-        "description": "The private DNS suffix and zone name."
-        }
+        "virtualNetworkResourceGroupName": {
+        "type": "string",
+        "metadata": {
+            "description": "The private DNS suffix and zone name."
+            }
         },
-      "virtualNetworkName": {
-      "type": "string",
-      "metadata": {
-        "description": "The private DNS suffix and zone name."
-        }
+        "virtualNetworkName": {
+        "type": "string",
+        "metadata": {
+            "description": "The private DNS suffix and zone name."
+            }
         },
         "subnetName": {
-      "type": "string",
-      "metadata": {
-        "description": "The private DNS suffix and zone name."
-        }
+        "type": "string",
+        "metadata": {
+            "description": "The private DNS suffix and zone name."
+            }
         }  
     },
     "variables": {
