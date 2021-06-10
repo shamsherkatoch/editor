@@ -1,59 +1,51 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-        "workflows_devemailsender_auae_name": {
-            "defaultValue": "devemailsender-auae",
-            "type": "String"
-        }
-    },
-    "variables": {},
-    "resources": [
-        {
-            "type": "Microsoft.Logic/workflows",
-            "apiVersion": "2017-07-01",
-            "name": "[parameters('workflows_devemailsender_auae_name')]",
-            "location": "australiaeast",
-            "tags": {
-                "CreatedBy": "Infraops DevOps 2019 CICD",
-                "Application": "STAR",
-                "AssignedTo": "IR SYSTEMS",
-                "Environment": "Dev"
+    "apiVersion": "2017-05-10",
+    "name": "DNSARecord",
+    "type": "Microsoft.Resources/deployments",
+    "resourceGroup": "<resourcegroup-where-the-dns-zone-lives>",
+    "subscriptionId": "<subscription-where-the-dns-zone-lives>",
+    "dependsOn": [
+        "[variables('privateEndpointName')]"
+    ],
+    "properties": {
+        "mode": "Incremental",
+        "expressionEvaluationOptions": {
+            "scope": "inner"
+        },
+        "parameters": {
+            "recordName": {
+                "value": "[variables('keyVaultName')]"
             },
-            "identity": {
-                "type": "UserAssigned",
-                "userAssignedIdentities": {
-                    "/subscriptions/0f1c5e89-3639-4a79-aaa8-5fe6f67d2935/resourcegroups/rg-auae-dev-webapp-star/providers/microsoft.managedidentity/userassignedidentities/mi-auae-dev-star": {
-                        "principalId": "bf7f46fc-fdf0-4d35-8586-b98e521927aa",
-                        "clientId": "a4f0a6ae-be1d-44b2-975d-29a045a33e91"
-                    }
+            "NetworkInterfaceId": {
+                "value": "[reference(variables('privateEndpointName')).networkInterfaces[0].id]"
+            }
+        },
+        "template": {
+            "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
+                "recordName": {
+                    "type": "string"
+                },
+                "NetworkInterfaceId": {
+                    "type": "string"
                 }
             },
-            "properties": {
-                "state": "Enabled",
-                "definition": {
-                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
-                    "triggers": {
-                        "recurrence": {
-                            "recurrence": {
-                                "frequency": "Hour",
-                                "interval": 1
-                            },
-                            "type": "Recurrence"
-                        }
-                    },
-                    "actions": {
-                        "actionType": {
-                            "type": "Http",
-                            "inputs": {
-                                "method": "GET",
-                                "uri": "http://status.azure.com/en-us/status/"
+            "resources": [
+                {
+                    "type": "Microsoft.Network/privateDnsZones/A",
+                    "apiVersion": "2018-09-01",
+                    "name": "[concat('privatelink.vaultcore.azure.net', '/', parameters('recordName'))]",
+                    "properties": {
+                        "ttl": 30,
+                        "aRecords": [
+                            {
+                                "ipv4Address": "[reference(parameters('NetworkInterfaceId'), '2020-05-01', 'Full').properties.ipConfigurations[0].properties.privateIPAddress]"
                             }
-                        }
+                        ]
                     }
-                },
-                "parameters": {}
-            }
+                }
+            ]
         }
-    ]
+    }
 }
