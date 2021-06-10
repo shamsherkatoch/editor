@@ -6,14 +6,20 @@
       "type": "string",
       "metadata": {
         "description": "The private DNS suffix and zone name."
-      }
-    },
+        }
+        },
       "virtualNetworkName": {
       "type": "string",
       "metadata": {
         "description": "The private DNS suffix and zone name."
-       }
-      }    
+        }
+        },
+        "subnetName": {
+      "type": "string",
+      "metadata": {
+        "description": "The private DNS suffix and zone name."
+        }
+        }  
     },
     "variables": {
         "keyVaultName": "test",
