@@ -1,67 +1,22 @@
-{
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-        "virtualNetworkResourceGroupName": {
-        "type": "string",
-        "metadata": {
-            "description": "The private DNS suffix and zone name."
-            }
-        },
-        "virtualNetworkName": {
-        "type": "string",
-        "metadata": {
-            "description": "The private DNS suffix and zone name."
-            }
-        },
-        "subnetName": {
-        "type": "string",
-        "metadata": {
-            "description": "The private DNS suffix and zone name."
-            }
-        }  
-    },
-    "variables": {
-        "keyVaultName": "test",
-        "location": "australiacentral",
-        "privateEndpointName": "adBDC"
-    },
-    "resources": [
-
-    {
-        "type": "Microsoft.Network/privateEndpoints",
-        "apiVersion": "2020-05-01",
-        "name": "[variables('privateEndpointName')]",
-        "location": "[variables('location')]",
-        "properties": {
-            "subnet": {
-                "id": "[resourceId(parameters('virtualNetworkResourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnetName'))]"
-            },
-            "privateLinkServiceConnections": [
-                {
-                    "name": "[variables('privateEndpointName')]",
-                    "properties": {
-                        "privateLinkServiceId": "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
-                        "groupIds": [
-                            "vault"
-                        ]
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "type": "Microsoft.Network/privateDnsZones/A",
-        "apiVersion": "2018-09-01",
-        "name": "[concat('privatelink.vaultcore.azure.net', '/', variables('keyVaultName'))]",
-        "properties": {
-            "ttl": 30,
-            "aRecords": [
-                {
-                    "ipv4Address": "[reference(variables('privateEndpointName'), '2020-05-01', 'Full').networkInterfaces[0].properties.ipConfigurations[0].properties.privateIPAddress]"
-                }
-            ]
-        }
-    }
-    ]
+{ 
+          "name": "myVirtualNetwork", 
+          "type": "Microsoft.Network/virtualNetworks", 
+          "apiVersion": "2019-04-01", 
+          "location": "WestUS", 
+          "properties": { 
+                "addressSpace": { 
+                     "addressPrefixes": [ 
+                          "10.0.0.0/16" 
+                        ] 
+                  }, 
+                  "subnets": [ 
+                         { 
+                                "name": "default", 
+                                "properties": { 
+                                    "addressPrefix": "10.0.0.0/24", 
+                                    "privateEndpointNetworkPolicies": "Disabled" 
+                                 } 
+                         } 
+                  ] 
+          } 
 }
