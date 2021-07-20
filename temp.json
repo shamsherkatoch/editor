@@ -1,216 +1,94 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "location": {
-            "type": "string"
+            "value": "australiacentral2"
         },
         "networkSecurityGroupId": {
-            "type": "string"
+            "value": "/subscriptions/0f1c5e89-3639-4a79-aaa8-5fe6f67d2935/resourceGroups/rg-auac2-network/providers/Microsoft.Network/networkSecurityGroups/nsg-auac2-dev-dev"
         },
         "subnetName": {
-            "type": "string"
+            "value": "lb"
         },
         "virtualNetworkId": {
-            "type": "string"
+            "value": "/subscriptions/0f1c5e89-3639-4a79-aaa8-5fe6f67d2935/resourceGroups/rg-auac2-network/providers/Microsoft.Network/virtualNetworks/vnet-auac2-dev-dev"
         },
         "virtualMachineName": {
-            "type": "string"
+            "value": "AUACDC10TEST01"
         },
         "virtualMachineComputerName": {
-            "type": "string"
+            "value": "AUACDC10WEB001T"
         },
-        "resourceTags": {
-            "type": "object"
+        "virtualMachineRG": {
+            "value": "rg-auac-dev-webservices_Test"
         },
         "osDiskType": {
-            "type": "string"
+            "value": "Premium_LRS"
         },
         "dataDisks": {
-            "type": "array"
+            "value": [
+                {
+                    "lun": 0,
+                    "createOption": "attach",
+                    "caching": "None",
+                    "writeAcceleratorEnabled": false,
+                    "id": null,
+                    "name": "AUACDC10TEST01_DataDisk_0",
+                    "storageAccountType": null,
+                    "diskSizeGB": null,
+                    "diskEncryptionSet": null
+                }
+            ]
         },
         "dataDiskResources": {
-            "type": "array"
+            "value": [
+                {
+                    "name": "AUACDC10TEST01_DataDisk_0",
+                    "sku": "Premium_LRS",
+                    "properties": {
+                        "diskSizeGB": 32,
+                        "creationData": {
+                            "createOption": "empty"
+                        }
+                    }
+                }
+            ]
         },
         "virtualMachineSize": {
-            "type": "string"
+            "value": "Standard_D2s_v3"
         },
         "adminUsername": {
-            "type": "string"
+            "value": "cloudadmin"
         },
         "adminPassword": {
-            "type": "securestring"
+            "value": "SecureString"
         },
         "patchMode": {
-            "type": "string"
+            "value": "Manual"
         },
         "autoShutdownStatus": {
-            "type": "string"
+            "value": "Enabled"
         },
         "autoShutdownTime": {
-            "type": "string"
+            "value": "19:00"
         },
         "autoShutdownTimeZone": {
-            "type": "string"
+            "value": "AUS Eastern Standard Time"
         },
         "autoShutdownNotificationStatus": {
-            "type": "string"
+            "value": "Disabled"
         },
         "autoShutdownNotificationLocale": {
-            "type": "string"
-        }
-    },
-    "variables": {
-        "nsgId": "[parameters('networkSecurityGroupId')]",
-        "vnetId": "[parameters('virtualNetworkId')]",
-        "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]"
-    },
-    "resources": [
-        {
-            "name": "[concat('nic-', parameters('virtualMachineName'))]",
-            "type": "Microsoft.Network/networkInterfaces",
-            "apiVersion": "2019-07-01",
-            "location": "[parameters('location')]",
-            "dependsOn": [],
-            "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "ipconfig1",
-                        "properties": {
-                            "subnet": {
-                                "id": "[variables('subnetRef')]"
-                            },
-                            "privateIPAllocationMethod": "Dynamic"
-                        }
-                    }
-                ],
-                "networkSecurityGroup": {
-                    "id": "[variables('nsgId')]"
-                }
-            },
-            "tags": "[parameters('resourceTags')]"
+            "value": "en"
         },
-        {
-            "name": "[concat(parameters('virtualMachineName'), '_DataDisk_0')]",
-            "type": "Microsoft.Compute/disks",
-            "apiVersion": "2020-05-01",
-            "location": "[parameters('location')]",
-            "properties": "[parameters('dataDiskResources')[copyIndex()].properties]",
-            "sku": {
-                "name": "[parameters('dataDiskResources')[copyIndex()].sku]"
-            },
-            "copy": {
-                "name": "managedDiskResources",
-                "count": "[length(parameters('dataDiskResources'))]"
-            },
-            "tags": "[parameters('resourceTags')]"
-        },
-        {
-            "name": "[parameters('virtualMachineName')]",
-            "type": "Microsoft.Compute/virtualMachines",
-            "apiVersion": "2020-06-01",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "managedDiskResources",
-                "[concat('Microsoft.Network/networkInterfaces/', concat('nic-', parameters('virtualMachineName')))]"
-            ],
-            "properties": {
-                "hardwareProfile": {
-                    "vmSize": "[parameters('virtualMachineSize')]"
-                },
-                "storageProfile": {
-                    "osDisk": {
-                        "createOption": "fromImage",
-                        "managedDisk": {
-                            "storageAccountType": "[parameters('osDiskType')]"
-                        }
-                    },
-                    "imageReference": {
-                        "publisher": "center-for-internet-security-inc",
-                        "offer": "cis-windows-server-2016-v1-0-0-l1",
-                        "sku": "cis-ws2016-l1",
-                        "version": "latest"
-                                        },
-                    "copy": [
-                        {
-                            "name": "dataDisks",
-                            "count": "[length(parameters('dataDisks'))]",
-                            "input": {
-                                "lun": "[parameters('dataDisks')[copyIndex('dataDisks')].lun]",
-                                "createOption": "[parameters('dataDisks')[copyIndex('dataDisks')].createOption]",
-                                "caching": "[parameters('dataDisks')[copyIndex('dataDisks')].caching]",
-                                "writeAcceleratorEnabled": "[parameters('dataDisks')[copyIndex('dataDisks')].writeAcceleratorEnabled]",
-                                "diskSizeGB": "[parameters('dataDisks')[copyIndex('dataDisks')].diskSizeGB]",
-                                "managedDisk": {
-                                    "id": "[coalesce(parameters('dataDisks')[copyIndex('dataDisks')].id, if(equals(concat(parameters('virtualMachineName'), '_DataDisk_0'), json('null')), json('null'), resourceId('Microsoft.Compute/disks', concat(parameters('virtualMachineName'), '_DataDisk_0'))))]",
-                                    "storageAccountType": "[parameters('dataDisks')[copyIndex('dataDisks')].storageAccountType]",
-                                    "diskEncryptionSet": "[parameters('dataDisks')[copyIndex('dataDisks')].diskEncryptionSet]"
-                                }
-                            }
-                        }
-                    ]
-                },
-                "networkProfile": {
-                    "networkInterfaces": [
-                        {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat('nic-', parameters('virtualMachineName')))]"
-                        }
-                    ]
-                },
-                "osProfile": {
-                    "computerName": "[parameters('virtualMachineComputerName')]",
-                    "adminUsername": "[parameters('adminUsername')]",
-                    "adminPassword": "[parameters('adminPassword')]",
-                    "windowsConfiguration": {
-                        "enableAutomaticUpdates": false,
-                        "provisionVmAgent": true,
-                        "patchSettings": {
-                            "patchMode": "[parameters('patchMode')]"
-                        }
-                    }
-                },
-                "diagnosticsProfile": {
-                    "bootDiagnostics": {
-                        "enabled": true
-                    }
-                }
-            },
-            "plan": {
-                "name": "cis-ws2016-l1",
-                "publisher": "center-for-internet-security-inc",
-                "product": "cis-windows-server-2016-v1-0-0-l1"
-            },
-            "tags": "[parameters('resourceTags')]"
-        },
-        {
-            "name": "[concat('shutdown-computevm-', parameters('virtualMachineName'))]",
-            "type": "Microsoft.DevTestLab/schedules",
-            "apiVersion": "2017-04-26-preview",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', parameters('virtualMachineName'))]"
-            ],
-            "properties": {
-                "status": "[parameters('autoShutdownStatus')]",
-                "taskType": "ComputeVmShutdownTask",
-                "dailyRecurrence": {
-                    "time": "[parameters('autoShutdownTime')]"
-                },
-                "timeZoneId": "[parameters('autoShutdownTimeZone')]",
-                "targetResourceId": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]",
-                "notificationSettings": {
-                    "status": "[parameters('autoShutdownNotificationStatus')]",
-                    "notificationLocale": "[parameters('autoShutdownNotificationLocale')]",
-                    "timeInMinutes": "30"
-                }
-            },
-            "tags": "[parameters('resourceTags')]"
-        }
-    ],
-    "outputs": {
-        "adminUsername": {
-            "type": "string",
-            "value": "[parameters('adminUsername')]"
+        "resourceTags": {
+            "value": {
+                "CreatedBy": "Infraops DevOps 2019 CICD",
+                "Application": "Infraops-Test",
+                "AssignedTo": "Infraops",
+                "Environment": "Ino"
+            }
         }
     }
 }
