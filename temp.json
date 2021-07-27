@@ -1,94 +1,165 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "location": {
-            "value": "australiacentral2"
+        "sites_auac_dev_crass_name": {
+            "defaultValue": "auac-dev-crass",
+            "type": "String"
         },
-        "networkSecurityGroupId": {
-            "value": "/subscriptions/0f1c5e89-3639-4a79-aaa8-5fe6f67d2935/resourceGroups/rg-auac2-network/providers/Microsoft.Network/networkSecurityGroups/nsg-auac2-dev-dev"
-        },
-        "subnetName": {
-            "value": "lb"
-        },
-        "virtualNetworkId": {
-            "value": "/subscriptions/0f1c5e89-3639-4a79-aaa8-5fe6f67d2935/resourceGroups/rg-auac2-network/providers/Microsoft.Network/virtualNetworks/vnet-auac2-dev-dev"
-        },
-        "virtualMachineName": {
-            "value": "AUACDC10TEST01"
-        },
-        "virtualMachineComputerName": {
-            "value": "AUACDC10WEB001T"
-        },
-        "virtualMachineRG": {
-            "value": "rg-auac-dev-webservices_Test"
-        },
-        "osDiskType": {
-            "value": "Premium_LRS"
-        },
-        "dataDisks": {
-            "value": [
-                {
-                    "lun": 0,
-                    "createOption": "attach",
-                    "caching": "None",
-                    "writeAcceleratorEnabled": false,
-                    "id": null,
-                    "name": "AUACDC10TEST01_DataDisk_0",
-                    "storageAccountType": null,
-                    "diskSizeGB": null,
-                    "diskEncryptionSet": null
-                }
-            ]
-        },
-        "dataDiskResources": {
-            "value": [
-                {
-                    "name": "AUACDC10TEST01_DataDisk_0",
-                    "sku": "Premium_LRS",
-                    "properties": {
-                        "diskSizeGB": 32,
-                        "creationData": {
-                            "createOption": "empty"
-                        }
+        "serverfarms_ASP_auacdevwebappcrass_externalid": {
+            "defaultValue": "/subscriptions/0f1c5e89-3639-4a79-aaa8-5fe6f67d2935/resourceGroups/rg-auac-dev-webapp-crass/providers/Microsoft.Web/serverfarms/ASP-auacdevwebappcrass",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2018-11-01",
+            "name": "[parameters('sites_auac_dev_crass_name')]",
+            "location": "Australia Central",
+            "tags": {
+                "Assigned To": "DevOps",
+                "Application": "CRASS"
+            },
+            "kind": "functionapp",
+            "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                    {
+                        "name": "[concat(parameters('sites_auac_dev_crass_name'), '.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Standard"
+                    },
+                    {
+                        "name": "[concat(parameters('sites_auac_dev_crass_name'), '.scm.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Repository"
                     }
-                }
-            ]
+                ],
+                "serverFarmId": "[parameters('serverfarms_ASP_auacdevwebappcrass_externalid')]",
+                "reserved": false,
+                "isXenon": false,
+                "hyperV": false,
+                "siteConfig": {
+                    "numberOfWorkers": 1,
+                    "alwaysOn": true,
+                    "http20Enabled": false
+                },
+                "scmSiteAlsoStopped": false,
+                "clientAffinityEnabled": false,
+                "clientCertEnabled": false,
+                "hostNamesDisabled": false,
+                "containerSize": 1536,
+                "dailyMemoryTimeQuota": 0,
+                "httpsOnly": false,
+                "redundancyMode": "None"
+            }
         },
-        "virtualMachineSize": {
-            "value": "Standard_D2s_v3"
+        {
+            "type": "Microsoft.Web/sites/config",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_auac_dev_crass_name'), '/web')]",
+            "location": "Australia Central",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_auac_dev_crass_name'))]"
+            ],
+            "tags": {
+                "Assigned To": "DevOps",
+                "Application": "CRASS"
+            },
+            "properties": {
+                "numberOfWorkers": 1,
+                "defaultDocuments": [
+                    "Default.htm",
+                    "Default.html",
+                    "Default.asp",
+                    "index.htm",
+                    "index.html",
+                    "iisstart.htm",
+                    "default.aspx",
+                    "index.php"
+                ],
+                "netFrameworkVersion": "v4.0",
+                "phpVersion": "5.6",
+                "requestTracingEnabled": false,
+                "remoteDebuggingEnabled": false,
+                "httpLoggingEnabled": false,
+                "logsDirectorySizeLimit": 35,
+                "detailedErrorLoggingEnabled": false,
+                "publishingUsername": "$auac-dev-crass",
+                "azureStorageAccounts": {},
+                "scmType": "None",
+                "use32BitWorkerProcess": true,
+                "webSocketsEnabled": false,
+                "alwaysOn": true,
+                "managedPipelineMode": "Integrated",
+                "virtualApplications": [
+                    {
+                        "virtualPath": "/",
+                        "physicalPath": "site\\wwwroot",
+                        "preloadEnabled": true
+                    }
+                ],
+                "loadBalancing": "LeastRequests",
+                "experiments": {
+                    "rampUpRules": []
+                },
+                "autoHealEnabled": false,
+                "localMySqlEnabled": false,
+                "ipSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictionsUseMain": false,
+                "http20Enabled": false,
+                "minTlsVersion": "1.2",
+                "ftpsState": "AllAllowed",
+                "reservedInstanceCount": 0
+            }
         },
-        "adminUsername": {
-            "value": "cloudadmin"
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_auac_dev_crass_name'), '/TimerTrigger1')]",
+            "location": "Australia Central",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_auac_dev_crass_name'))]"
+            ],
+            "properties": {
+                "script_root_path_href": "https://auac-dev-crass.azurewebsites.net/admin/vfs/site/wwwroot/TimerTrigger1/",
+                "script_href": "https://auac-dev-crass.azurewebsites.net/admin/vfs/site/wwwroot/TimerTrigger1/run.csx",
+                "config_href": "https://auac-dev-crass.azurewebsites.net/admin/vfs/site/wwwroot/TimerTrigger1/function.json",
+                "href": "https://auac-dev-crass.azurewebsites.net/admin/functions/TimerTrigger1",
+                "config": {}
+            }
         },
-        "adminPassword": {
-            "value": "SecureString"
-        },
-        "patchMode": {
-            "value": "Manual"
-        },
-        "autoShutdownStatus": {
-            "value": "Enabled"
-        },
-        "autoShutdownTime": {
-            "value": "19:00"
-        },
-        "autoShutdownTimeZone": {
-            "value": "AUS Eastern Standard Time"
-        },
-        "autoShutdownNotificationStatus": {
-            "value": "Disabled"
-        },
-        "autoShutdownNotificationLocale": {
-            "value": "en"
-        },
-        "resourceTags": {
-            "value": {
-                "CreatedBy": "Infraops DevOps 2019 CICD",
-                "Application": "Infraops-Test",
-                "AssignedTo": "Infraops",
-                "Environment": "Ino"
+        {
+            "type": "Microsoft.Web/sites/hostNameBindings",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_auac_dev_crass_name'), '/', parameters('sites_auac_dev_crass_name'), '.azurewebsites.net')]",
+            "location": "Australia Central",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_auac_dev_crass_name'))]"
+            ],
+            "properties": {
+                "siteName": "auac-dev-crass",
+                "hostNameType": "Verified"
             }
         }
-    }
+    ]
 }
