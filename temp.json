@@ -1,164 +1,92 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "sites_auac_dev_crass_name": {
-            "defaultValue": "auac-dev-crass",
-            "type": "String"
+        "subscriptionId": {
+            "type": "string"
         },
-        "serverfarms_ASP_auacdevwebappcrass_externalid": {
-            "defaultValue": "/subscriptions/0f1c5e89-3639-4a79-aaa8-5fe6f67d2935/resourceGroups/rg-auac-dev-webapp-crass/providers/Microsoft.Web/serverfarms/ASP-auacdevwebappcrass",
-            "type": "String"
+        "name": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "hostingPlanName": {
+            "type": "string"
+        },
+        "serverFarmResourceGroup": {
+            "type": "string"
+        },
+        "alwaysOn": {
+            "type": "bool"
+        },
+        "storageAccountName": {
+            "type": "string"
+        },
+        "use32BitWorkerProcess": {
+            "type": "bool"
         }
     },
-    "variables": {},
     "resources": [
         {
+            "apiVersion": "2018-11-01",
+            "name": "[parameters('name')]",
             "type": "Microsoft.Web/sites",
-            "apiVersion": "2018-11-01",
-            "name": "[parameters('sites_auac_dev_crass_name')]",
-            "location": "Australia Central",
-            "tags": {
-                "Assigned To": "DevOps",
-                "Application": "CRASS"
-            },
             "kind": "functionapp",
-            "properties": {
-                "enabled": true,
-                "hostNameSslStates": [
-                    {
-                        "name": "[concat(parameters('sites_auac_dev_crass_name'), '.azurewebsites.net')]",
-                        "sslState": "Disabled",
-                        "hostType": "Standard"
-                    },
-                    {
-                        "name": "[concat(parameters('sites_auac_dev_crass_name'), '.scm.azurewebsites.net')]",
-                        "sslState": "Disabled",
-                        "hostType": "Repository"
-                    }
-                ],
-                "serverFarmId": "[parameters('serverfarms_ASP_auacdevwebappcrass_externalid')]",
-                "reserved": false,
-                "isXenon": false,
-                "hyperV": false,
-                "siteConfig": {
-                    "numberOfWorkers": 1,
-                    "alwaysOn": true,
-                    "http20Enabled": false
-                },
-                "scmSiteAlsoStopped": false,
-                "clientAffinityEnabled": false,
-                "clientCertEnabled": false,
-                "hostNamesDisabled": false,
-                "containerSize": 1536,
-                "dailyMemoryTimeQuota": 0,
-                "httpsOnly": false,
-                "redundancyMode": "None"
-            }
-        },
-        {
-            "type": "Microsoft.Web/sites/config",
-            "apiVersion": "2018-11-01",
-            "name": "[concat(parameters('sites_auac_dev_crass_name'), '/web')]",
-            "location": "Australia Central",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_auac_dev_crass_name'))]"
-            ],
+            "location": "[parameters('location')]",
             "tags": {
-                "Assigned To": "DevOps",
-                "Application": "CRASS"
+                "Assigned To": "DevOps"
             },
+            "dependsOn": [
+                "microsoft.insights/components/auac-dev-crass"
+            ],
             "properties": {
-                "numberOfWorkers": 1,
-                "defaultDocuments": [
-                    "Default.htm",
-                    "Default.html",
-                    "Default.asp",
-                    "index.htm",
-                    "index.html",
-                    "iisstart.htm",
-                    "default.aspx",
-                    "index.php"
-                ],
-                "netFrameworkVersion": "v4.0",
-                "phpVersion": "5.6",
-                "requestTracingEnabled": false,
-                "remoteDebuggingEnabled": false,
-                "httpLoggingEnabled": false,
-                "logsDirectorySizeLimit": 35,
-                "detailedErrorLoggingEnabled": false,
-                "publishingUsername": "$auac-dev-crass",
-                "azureStorageAccounts": {},
-                "scmType": "None",
-                "use32BitWorkerProcess": true,
-                "webSocketsEnabled": false,
-                "alwaysOn": true,
-                "managedPipelineMode": "Integrated",
-                "virtualApplications": [
-                    {
-                        "virtualPath": "/",
-                        "physicalPath": "site\\wwwroot",
-                        "preloadEnabled": true
-                    }
-                ],
-                "loadBalancing": "LeastRequests",
-                "experiments": {
-                    "rampUpRules": []
+                "name": "[parameters('name')]",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~3"
+                        },
+                        {
+                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                            "value": "dotnet"
+                        },
+                        {
+                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                            "value": "[reference('microsoft.insights/components/auac-dev-crass', '2015-05-01').InstrumentationKey]"
+                        },
+                        {
+                            "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                            "value": "[reference('microsoft.insights/components/auac-dev-crass', '2015-05-01').ConnectionString]"
+                        },
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=',listKeys(resourceId('0f1c5e89-3639-4a79-aaa8-5fe6f67d2935','rg-auac-dev-webapp-crass','Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').keys[0].value,';EndpointSuffix=','core.windows.net')]"
+                        }
+                    ],
+                    "use32BitWorkerProcess": "[parameters('use32BitWorkerProcess')]",
+                    "alwaysOn": "[parameters('alwaysOn')]"
                 },
-                "autoHealEnabled": false,
-                "localMySqlEnabled": false,
-                "ipSecurityRestrictions": [
-                    {
-                        "ipAddress": "Any",
-                        "action": "Allow",
-                        "priority": 1,
-                        "name": "Allow all",
-                        "description": "Allow all access"
-                    }
-                ],
-                "scmIpSecurityRestrictions": [
-                    {
-                        "ipAddress": "Any",
-                        "action": "Allow",
-                        "priority": 1,
-                        "name": "Allow all",
-                        "description": "Allow all access"
-                    }
-                ],
-                "scmIpSecurityRestrictionsUseMain": false,
-                "http20Enabled": false,
-                "minTlsVersion": "1.2",
-                "ftpsState": "AllAllowed",
-                "reservedInstanceCount": 0
+                "serverFarmId": "[concat('/subscriptions/', parameters('subscriptionId'),'/resourcegroups/', parameters('serverFarmResourceGroup'), '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]",
+                "clientAffinityEnabled": false
             }
         },
         {
-            "type": "Microsoft.Web/sites/functions",
-            "apiVersion": "2018-11-01",
-            "name": "[concat(parameters('sites_auac_dev_crass_name'), '/TimerTrigger1')]",
-            "location": "Australia Central",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_auac_dev_crass_name'))]"
-            ],
+            "apiVersion": "2020-02-02-preview",
+            "name": "auac-dev-crass",
+            "type": "microsoft.insights/components",
+            "location": "australiacentral",
+            "tags": {
+                "Assigned To": "DevOps"
+            },
+            "dependsOn": [],
             "properties": {
-                "script_root_path_href": "https://auac-dev-crass.azurewebsites.net/admin/vfs/site/wwwroot/TimerTrigger1/",
-                "script_href": "https://auac-dev-crass.azurewebsites.net/admin/vfs/site/wwwroot/TimerTrigger1/run.csx",
-                "config_href": "https://auac-dev-crass.azurewebsites.net/admin/vfs/site/wwwroot/TimerTrigger1/function.json",
-                "href": "https://auac-dev-crass.azurewebsites.net/admin/functions/TimerTrigger1",
-                "config": {}
-            }
-        },
-        {
-            "type": "Microsoft.Web/sites/hostNameBindings",
-            "apiVersion": "2018-11-01",
-            "name": "[concat(parameters('sites_auac_dev_crass_name'), '/', parameters('sites_auac_dev_crass_name'), '.azurewebsites.net')]",
-            "location": "Australia Central",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_auac_dev_crass_name'))]"
-            ],
-            "properties": {
-                "siteName": "auac-dev-crass",
-                "hostNameType": "Verified"
+                "ApplicationId": "[parameters('name')]",
+                "Request_Source": "IbizaWebAppExtensionCreate",
+                "Flow_Type": "Redfield",
+                "Application_Type": "web",
+                "WorkspaceResourceId": "/subscriptions/0f1c5e89-3639-4a79-aaa8-5fe6f67d2935/resourcegroups/defaultresourcegroup-cbr2/providers/microsoft.operationalinsights/workspaces/defaultworkspace-0f1c5e89-3639-4a79-aaa8-5fe6f67d2935-cbr2"
             }
         }
     ]
