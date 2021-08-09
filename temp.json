@@ -1,43 +1,45 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "smartdetectoralertrules_failure_anomalies___devinfraopsportal_auac_name": {
-            "defaultValue": "failure anomalies - devinfraopsportal-auac",
-            "type": "String"
+        "principalId": {
+            "type": "string",
+            "metadata": {
+                "description": "The principal to assign the role to"
+            }
         },
-        "components_devinfraopsportal_auac_externalid": {
-            "defaultValue": "/subscriptions/0f1c5e89-3639-4a79-aaa8-5fe6f67d2935/resourceGroups/rg-auac-dev-infraops/providers/microsoft.insights/components/devinfraopsportal-auac",
-            "type": "String"
+        "builtInRoleType": {
+            "type": "string",
+            "allowedValues": [
+                "Owner",
+                "Contributor",
+                "Reader"
+            ],
+            "metadata": {
+                "description": "Built-in role to assign"
+            }
         },
-        "actiongroups_application_insights_smart_detection_externalid": {
-            "defaultValue": "/subscriptions/0f1c5e89-3639-4a79-aaa8-5fe6f67d2935/resourceGroups/rg-auac2-dev-apps-dev/providers/microsoft.insights/actiongroups/application insights smart detection",
-            "type": "String"
+        "roleNameGuid": {
+            "type": "string",
+            "defaultValue": "[newGuid()]",
+            "metadata": {
+                "description": "A new GUID used to identify the role assignment"
+            }
         }
     },
-    "variables": {},
+    "variables": {
+        "Owner": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
+        "Contributor": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+        "Reader": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]"
+    },
     "resources": [
         {
-            "type": "microsoft.alertsmanagement/smartdetectoralertrules",
-            "apiVersion": "2021-04-01",
-            "name": "[parameters('smartdetectoralertrules_failure_anomalies___devinfraopsportal_auac_name')]",
-            "location": "global",
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2018-09-01-preview",
+            "name": "[parameters('roleNameGuid')]",
             "properties": {
-                "description": "Failure Anomalies notifies you of an unusual rise in the rate of failed HTTP requests or dependency calls.",
-                "state": "Enabled",
-                "severity": "Sev3",
-                "frequency": "PT1M",
-                "detector": {
-                    "id": "FailureAnomaliesDetector"
-                },
-                "scope": [
-                    "[parameters('components_devinfraopsportal_auac_externalid')]"
-                ],
-                "actionGroups": {
-                    "groupIds": [
-                        "[parameters('actiongroups_application_insights_smart_detection_externalid')]"
-                    ]
-                }
+                "roleDefinitionId": "[variables(parameters('builtInRoleType'))]",
+                "principalId": "[parameters('principalId')]"
             }
         }
     ]
