@@ -1,92 +1,43 @@
 {
-    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "subscriptionId": {
-            "type": "string"
+        "smartdetectoralertrules_failure_anomalies___devinfraopsportal_auac_name": {
+            "defaultValue": "failure anomalies - devinfraopsportal-auac",
+            "type": "String"
         },
-        "name": {
-            "type": "string"
+        "components_devinfraopsportal_auac_externalid": {
+            "defaultValue": "/subscriptions/0f1c5e89-3639-4a79-aaa8-5fe6f67d2935/resourceGroups/rg-auac-dev-infraops/providers/microsoft.insights/components/devinfraopsportal-auac",
+            "type": "String"
         },
-        "location": {
-            "type": "string"
-        },
-        "hostingPlanName": {
-            "type": "string"
-        },
-        "serverFarmResourceGroup": {
-            "type": "string"
-        },
-        "alwaysOn": {
-            "type": "bool"
-        },
-        "storageAccountName": {
-            "type": "string"
-        },
-        "use32BitWorkerProcess": {
-            "type": "bool"
+        "actiongroups_application_insights_smart_detection_externalid": {
+            "defaultValue": "/subscriptions/0f1c5e89-3639-4a79-aaa8-5fe6f67d2935/resourceGroups/rg-auac2-dev-apps-dev/providers/microsoft.insights/actiongroups/application insights smart detection",
+            "type": "String"
         }
     },
+    "variables": {},
     "resources": [
         {
-            "apiVersion": "2018-11-01",
-            "name": "[parameters('name')]",
-            "type": "Microsoft.Web/sites",
-            "kind": "functionapp",
-            "location": "[parameters('location')]",
-            "tags": {
-                "Assigned To": "DevOps"
-            },
-            "dependsOn": [
-                "microsoft.insights/components/auac-dev-crass"
-            ],
+            "type": "microsoft.alertsmanagement/smartdetectoralertrules",
+            "apiVersion": "2021-04-01",
+            "name": "[parameters('smartdetectoralertrules_failure_anomalies___devinfraopsportal_auac_name')]",
+            "location": "global",
             "properties": {
-                "name": "[parameters('name')]",
-                "siteConfig": {
-                    "appSettings": [
-                        {
-                            "name": "FUNCTIONS_EXTENSION_VERSION",
-                            "value": "~3"
-                        },
-                        {
-                            "name": "FUNCTIONS_WORKER_RUNTIME",
-                            "value": "dotnet"
-                        },
-                        {
-                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                            "value": "[reference('microsoft.insights/components/auac-dev-crass', '2015-05-01').InstrumentationKey]"
-                        },
-                        {
-                            "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
-                            "value": "[reference('microsoft.insights/components/auac-dev-crass', '2015-05-01').ConnectionString]"
-                        },
-                        {
-                            "name": "AzureWebJobsStorage",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=',listKeys(resourceId('0f1c5e89-3639-4a79-aaa8-5fe6f67d2935','rg-auac-dev-webapp-crass','Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').keys[0].value,';EndpointSuffix=','core.windows.net')]"
-                        }
-                    ],
-                    "use32BitWorkerProcess": "[parameters('use32BitWorkerProcess')]",
-                    "alwaysOn": "[parameters('alwaysOn')]"
+                "description": "Failure Anomalies notifies you of an unusual rise in the rate of failed HTTP requests or dependency calls.",
+                "state": "Enabled",
+                "severity": "Sev3",
+                "frequency": "PT1M",
+                "detector": {
+                    "id": "FailureAnomaliesDetector"
                 },
-                "serverFarmId": "[concat('/subscriptions/', parameters('subscriptionId'),'/resourcegroups/', parameters('serverFarmResourceGroup'), '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]",
-                "clientAffinityEnabled": false
-            }
-        },
-        {
-            "apiVersion": "2020-02-02-preview",
-            "name": "auac-dev-crass",
-            "type": "microsoft.insights/components",
-            "location": "australiacentral",
-            "tags": {
-                "Assigned To": "DevOps"
-            },
-            "dependsOn": [],
-            "properties": {
-                "ApplicationId": "[parameters('name')]",
-                "Request_Source": "IbizaWebAppExtensionCreate",
-                "Flow_Type": "Redfield",
-                "Application_Type": "web",
-                "WorkspaceResourceId": "/subscriptions/0f1c5e89-3639-4a79-aaa8-5fe6f67d2935/resourcegroups/defaultresourcegroup-cbr2/providers/microsoft.operationalinsights/workspaces/defaultworkspace-0f1c5e89-3639-4a79-aaa8-5fe6f67d2935-cbr2"
+                "scope": [
+                    "[parameters('components_devinfraopsportal_auac_externalid')]"
+                ],
+                "actionGroups": {
+                    "groupIds": [
+                        "[parameters('actiongroups_application_insights_smart_detection_externalid')]"
+                    ]
+                }
             }
         }
     ]
