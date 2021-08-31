@@ -1,577 +1,206 @@
+
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "networkSecurityGroups_nsg_auac_dev_lbagw_name": {
-            "defaultValue": "nsg-auac-dev-lbagw",
+        "routeTables_rt_name": {
+            "defaultValue": "rt-auac-dev-name",
             "type": "String"
         }
     },
     "variables": {},
     "resources": [
         {
-            "type": "Microsoft.Network/networkSecurityGroups",
-            "apiVersion": "2020-11-01",
-            "name": "[parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name')]",
+            "type": "Microsoft.Network/routeTables",
+            "apiVersion": "2020-08-01",
+            "name": "[parameters('routeTables_rt_name')]",
             "location": "australiacentral",
             "properties": {
-                "securityRules": [
+                "disableBgpRoutePropagation": true,
+                "routes": [
                     {
-                        "name": "Deny-All-Inbound-Override_Default",
+                        "name": "AGDNET",
                         "properties": {
-                            "protocol": "*",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "*",
-                            "sourceAddressPrefix": "Internet",
-                            "destinationAddressPrefix": "*",
-                            "access": "Deny",
-                            "priority": 4096,
-                            "direction": "Inbound",
-                            "sourcePortRanges": [],
-                            "destinationPortRanges": [],
-                            "sourceAddressPrefixes": [],
-                            "destinationAddressPrefixes": []
+                            "addressPrefix": "10.5.0.0/16",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "10.61.0.12",
+                            "hasBgpOverride": false
                         }
                     },
                     {
-                        "name": "Allow-All-Inbound-AGDNET_MGMT_Azure_AGSES",
+                        "name": "AGDNETNet",
                         "properties": {
-                            "protocol": "*",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "*",
-                            "access": "Allow",
-                            "priority": 4095,
-                            "direction": "Inbound",
-                            "sourcePortRanges": [],
-                            "destinationPortRanges": [],
-                            "sourceAddressPrefixes": [
-                                "10.5.0.0/16",
-                                "10.80.1.0/24",
-                                "172.20.0.0/16",
-                                "10.60.0.0/20",
-                                "10.61.16.0/20",
-                                "10.60.32.0/20",
-                                "10.55.0.0/16",
-                                "10.6.3.0/24"
-                            ],
-                            "destinationAddressPrefixes": [
-                                "10.61.22.0/28",
-                                "10.61.22.16/28"
-                            ]
+                            "addressPrefix": "10.55.0.0/16",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "10.61.0.12",
+                            "hasBgpOverride": false
                         }
                     },
                     {
-                        "name": "Deny-All-Outbound-Override_Default",
+                        "name": "AGDNETNet2",
                         "properties": {
-                            "protocol": "*",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "*",
-                            "sourceAddressPrefix": "*",
-                            "destinationAddressPrefix": "Internet",
-                            "access": "Deny",
-                            "priority": 4096,
-                            "direction": "Outbound",
-                            "sourcePortRanges": [],
-                            "destinationPortRanges": [],
-                            "sourceAddressPrefixes": [],
-                            "destinationAddressPrefixes": []
+                            "addressPrefix": "10.6.3.0/24",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "10.61.0.12",
+                            "hasBgpOverride": false
                         }
                     },
                     {
-                        "name": "Allow-All-Outbound-AGDNET_MGMT_Azure_AGSES",
+                        "name": "AGDNETNet3",
                         "properties": {
-                            "protocol": "*",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "*",
-                            "sourceAddressPrefix": "10.61.22.0/28",
-                            "access": "Allow",
-                            "priority": 4095,
-                            "direction": "Outbound",
-                            "sourcePortRanges": [],
-                            "destinationPortRanges": [],
-                            "sourceAddressPrefixes": [],
-                            "destinationAddressPrefixes": [
-                                "10.5.0.0/16",
-                                "10.80.1.0/24",
-                                "172.20.0.0/16",
-                                "10.60.0.0/20",
-                                "10.61.16.0/20",
-                                "10.60.32.0/20",
-                                "10.55.0.0/16",
-                                "10.6.3.0/24",
-                                "10.61.32.0/20",
-                                "10.61.0.0/20"
-                            ]
+                            "addressPrefix": "10.6.2.0/24",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "10.61.0.12",
+                            "hasBgpOverride": false
                         }
                     },
                     {
-                        "name": "Allow-AzureLoadBalancer",
+                        "name": "MGT",
                         "properties": {
-                            "description": "Allow rule for Application Gateway LB",
-                            "protocol": "*",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "*",
-                            "sourceAddressPrefix": "AzureLoadBalancer",
-                            "destinationAddressPrefix": "10.61.22.0/28",
-                            "access": "Allow",
-                            "priority": 4080,
-                            "direction": "Inbound",
-                            "sourcePortRanges": [],
-                            "destinationPortRanges": [],
-                            "sourceAddressPrefixes": [],
-                            "destinationAddressPrefixes": []
+                            "addressPrefix": "10.80.1.0/24",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "10.61.0.12",
+                            "hasBgpOverride": false
                         }
                     },
                     {
-                        "name": "Allow-GatewayManager",
+                        "name": "AGSES",
                         "properties": {
-                            "description": "Allow rule for Application Gateway LB",
-                            "protocol": "*",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "65503-65534",
-                            "sourceAddressPrefix": "GatewayManager",
-                            "destinationAddressPrefix": "10.61.22.0/28",
-                            "access": "Allow",
-                            "priority": 4081,
-                            "direction": "Inbound",
-                            "sourcePortRanges": [],
-                            "destinationPortRanges": [],
-                            "sourceAddressPrefixes": [],
-                            "destinationAddressPrefixes": []
+                            "addressPrefix": "172.20.0.0/16",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "10.61.0.12",
+                            "hasBgpOverride": false
                         }
                     },
                     {
-                        "name": "Allow-All-Outbound-AzureMonitor",
+                        "name": "Azureauac",
                         "properties": {
-                            "protocol": "*",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "443",
-                            "sourceAddressPrefix": "10.61.22.0/28",
-                            "destinationAddressPrefix": "AzureMonitor",
-                            "access": "Allow",
-                            "priority": 4082,
-                            "direction": "Outbound",
-                            "sourcePortRanges": [],
-                            "destinationPortRanges": [],
-                            "sourceAddressPrefixes": [],
-                            "destinationAddressPrefixes": []
+                            "addressPrefix": "10.61.0.0/20",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "10.61.0.12",
+                            "hasBgpOverride": false
                         }
                     },
                     {
-                        "name": "Allow-All-Outbound-Storage",
+                        "name": "Default",
                         "properties": {
-                            "protocol": "*",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "*",
-                            "sourceAddressPrefix": "10.61.22.0/28",
-                            "destinationAddressPrefix": "Storage",
-                            "access": "Allow",
-                            "priority": 4083,
-                            "direction": "Outbound",
-                            "sourcePortRanges": [],
-                            "destinationPortRanges": [],
-                            "sourceAddressPrefixes": [],
-                            "destinationAddressPrefixes": []
-                        }
-                    },
-                    {
-                        "name": "Allow-AzureMonitor",
-                        "properties": {
-                            "protocol": "TCP",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "443",
-                            "sourceAddressPrefix": "AzureMonitor",
-                            "destinationAddressPrefix": "10.61.22.0/28",
-                            "access": "Allow",
-                            "priority": 4082,
-                            "direction": "Inbound",
-                            "sourcePortRanges": [],
-                            "destinationPortRanges": [],
-                            "sourceAddressPrefixes": [],
-                            "destinationAddressPrefixes": []
-                        }
-                    },
-                    {
-                        "name": "Allow-All-Outbound-AzureLoadBalancer",
-                        "properties": {
-                            "protocol": "*",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "*",
-                            "sourceAddressPrefix": "10.61.22.0/28",
-                            "destinationAddressPrefix": "AzureLoadBalancer",
-                            "access": "Allow",
-                            "priority": 4080,
-                            "direction": "Outbound",
-                            "sourcePortRanges": [],
-                            "destinationPortRanges": [],
-                            "sourceAddressPrefixes": [],
-                            "destinationAddressPrefixes": []
-                        }
-                    },
-                    {
-                        "name": "Allow-All-Outbound-GatewayManager",
-                        "properties": {
-                            "protocol": "*",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "*",
-                            "sourceAddressPrefix": "10.61.22.0/28",
-                            "destinationAddressPrefix": "GatewayManager",
-                            "access": "Allow",
-                            "priority": 4081,
-                            "direction": "Outbound",
-                            "sourcePortRanges": [],
-                            "destinationPortRanges": [],
-                            "sourceAddressPrefixes": [],
-                            "destinationAddressPrefixes": []
-                        }
-                    },
-                    {
-                        "name": "Allow-HTTPS-AzureMetrics",
-                        "properties": {
-                            "protocol": "TCP",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "443",
-                            "sourceAddressPrefix": "10.61.22.0/28",
-                            "destinationAddressPrefix": "Internet",
-                            "access": "Allow",
-                            "priority": 4085,
-                            "direction": "Outbound",
-                            "sourcePortRanges": [],
-                            "destinationPortRanges": [],
-                            "sourceAddressPrefixes": [],
-                            "destinationAddressPrefixes": []
-                        }
-                    },
-                    {
-                        "name": "Allow-Azure-Dev-Inbound",
-                        "properties": {
-                            "protocol": "*",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "*",
-                            "destinationAddressPrefix": "10.61.16.0/20",
-                            "access": "Allow",
-                            "priority": 4091,
-                            "direction": "Inbound",
-                            "sourcePortRanges": [],
-                            "destinationPortRanges": [],
-                            "sourceAddressPrefixes": [
-                                "10.62.16.0/20",
-                                "10.60.16.0/20"
-                            ],
-                            "destinationAddressPrefixes": []
+                            "addressPrefix": "0.0.0.0/0",
+                            "nextHopType": "Internet",
+                            "hasBgpOverride": false
                         }
                     }
                 ]
             }
         },
         {
-            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
-            "apiVersion": "2020-11-01",
-            "name": "[concat(parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'), '/Allow-All-Inbound-AGDNET_MGMT_Azure_AGSES')]",
+            "type": "Microsoft.Network/routeTables/routes",
+            "apiVersion": "2020-08-01",
+            "name": "[concat(parameters('routeTables_rt_name'), '/AGDNET')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'))]"
+                "[resourceId('Microsoft.Network/routeTables', parameters('routeTables_rt_name'))]"
             ],
             "properties": {
-                "protocol": "*",
-                "sourcePortRange": "*",
-                "destinationPortRange": "*",
-                "access": "Allow",
-                "priority": 4095,
-                "direction": "Inbound",
-                "sourcePortRanges": [],
-                "destinationPortRanges": [],
-                "sourceAddressPrefixes": [
-                    "10.5.0.0/16",
-                    "10.80.1.0/24",
-                    "172.20.0.0/16",
-                    "10.60.0.0/20",
-                    "10.61.16.0/20",
-                    "10.60.32.0/20",
-                    "10.55.0.0/16",
-                    "10.6.3.0/24"
-                ],
-                "destinationAddressPrefixes": [
-                    "10.61.22.0/28",
-                    "10.61.22.16/28"
-                ]
+                "addressPrefix": "10.5.0.0/16",
+                "nextHopType": "VirtualAppliance",
+                "nextHopIpAddress": "10.61.0.12",
+                "hasBgpOverride": false
             }
         },
         {
-            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
-            "apiVersion": "2020-11-01",
-            "name": "[concat(parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'), '/Allow-All-Outbound-AGDNET_MGMT_Azure_AGSES')]",
+            "type": "Microsoft.Network/routeTables/routes",
+            "apiVersion": "2020-08-01",
+            "name": "[concat(parameters('routeTables_rt_name'), '/AGDNETNet')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'))]"
+                "[resourceId('Microsoft.Network/routeTables', parameters('routeTables_rt_name'))]"
             ],
             "properties": {
-                "protocol": "*",
-                "sourcePortRange": "*",
-                "destinationPortRange": "*",
-                "sourceAddressPrefix": "10.61.22.0/28",
-                "access": "Allow",
-                "priority": 4095,
-                "direction": "Outbound",
-                "sourcePortRanges": [],
-                "destinationPortRanges": [],
-                "sourceAddressPrefixes": [],
-                "destinationAddressPrefixes": [
-                    "10.5.0.0/16",
-                    "10.80.1.0/24",
-                    "172.20.0.0/16",
-                    "10.60.0.0/20",
-                    "10.61.16.0/20",
-                    "10.60.32.0/20",
-                    "10.55.0.0/16",
-                    "10.6.3.0/24",
-                    "10.61.32.0/20",
-                    "10.61.0.0/20"
-                ]
+                "addressPrefix": "10.55.0.0/16",
+                "nextHopType": "VirtualAppliance",
+                "nextHopIpAddress": "10.61.0.12",
+                "hasBgpOverride": false
             }
         },
         {
-            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
-            "apiVersion": "2020-11-01",
-            "name": "[concat(parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'), '/Allow-All-Outbound-AzureLoadBalancer')]",
+            "type": "Microsoft.Network/routeTables/routes",
+            "apiVersion": "2020-08-01",
+            "name": "[concat(parameters('routeTables_rt_name'), '/AGDNETNet2')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'))]"
+                "[resourceId('Microsoft.Network/routeTables', parameters('routeTables_rt_name'))]"
             ],
             "properties": {
-                "protocol": "*",
-                "sourcePortRange": "*",
-                "destinationPortRange": "*",
-                "sourceAddressPrefix": "10.61.22.0/28",
-                "destinationAddressPrefix": "AzureLoadBalancer",
-                "access": "Allow",
-                "priority": 4080,
-                "direction": "Outbound",
-                "sourcePortRanges": [],
-                "destinationPortRanges": [],
-                "sourceAddressPrefixes": [],
-                "destinationAddressPrefixes": []
+                "addressPrefix": "10.6.3.0/24",
+                "nextHopType": "VirtualAppliance",
+                "nextHopIpAddress": "10.61.0.12",
+                "hasBgpOverride": false
             }
         },
         {
-            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
-            "apiVersion": "2020-11-01",
-            "name": "[concat(parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'), '/Allow-All-Outbound-AzureMonitor')]",
+            "type": "Microsoft.Network/routeTables/routes",
+            "apiVersion": "2020-08-01",
+            "name": "[concat(parameters('routeTables_rt_name'), '/AGDNETNet3')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'))]"
+                "[resourceId('Microsoft.Network/routeTables', parameters('routeTables_rt_name'))]"
             ],
             "properties": {
-                "protocol": "*",
-                "sourcePortRange": "*",
-                "destinationPortRange": "443",
-                "sourceAddressPrefix": "10.61.22.0/28",
-                "destinationAddressPrefix": "AzureMonitor",
-                "access": "Allow",
-                "priority": 4082,
-                "direction": "Outbound",
-                "sourcePortRanges": [],
-                "destinationPortRanges": [],
-                "sourceAddressPrefixes": [],
-                "destinationAddressPrefixes": []
+                "addressPrefix": "10.6.2.0/24",
+                "nextHopType": "VirtualAppliance",
+                "nextHopIpAddress": "10.61.0.12",
+                "hasBgpOverride": false
             }
         },
         {
-            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
-            "apiVersion": "2020-11-01",
-            "name": "[concat(parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'), '/Allow-All-Outbound-GatewayManager')]",
+            "type": "Microsoft.Network/routeTables/routes",
+            "apiVersion": "2020-08-01",
+            "name": "[concat(parameters('routeTables_rt_name'), '/AGSES')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'))]"
+                "[resourceId('Microsoft.Network/routeTables', parameters('routeTables_rt_name'))]"
             ],
             "properties": {
-                "protocol": "*",
-                "sourcePortRange": "*",
-                "destinationPortRange": "*",
-                "sourceAddressPrefix": "10.61.22.0/28",
-                "destinationAddressPrefix": "GatewayManager",
-                "access": "Allow",
-                "priority": 4081,
-                "direction": "Outbound",
-                "sourcePortRanges": [],
-                "destinationPortRanges": [],
-                "sourceAddressPrefixes": [],
-                "destinationAddressPrefixes": []
+                "addressPrefix": "172.20.0.0/16",
+                "nextHopType": "VirtualAppliance",
+                "nextHopIpAddress": "10.61.0.12",
+                "hasBgpOverride": false
             }
         },
         {
-            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
-            "apiVersion": "2020-11-01",
-            "name": "[concat(parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'), '/Allow-All-Outbound-Storage')]",
+            "type": "Microsoft.Network/routeTables/routes",
+            "apiVersion": "2020-08-01",
+            "name": "[concat(parameters('routeTables_rt_name'), '/Azureauac')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'))]"
+                "[resourceId('Microsoft.Network/routeTables', parameters('routeTables_rt_name'))]"
             ],
             "properties": {
-                "protocol": "*",
-                "sourcePortRange": "*",
-                "destinationPortRange": "*",
-                "sourceAddressPrefix": "10.61.22.0/28",
-                "destinationAddressPrefix": "Storage",
-                "access": "Allow",
-                "priority": 4083,
-                "direction": "Outbound",
-                "sourcePortRanges": [],
-                "destinationPortRanges": [],
-                "sourceAddressPrefixes": [],
-                "destinationAddressPrefixes": []
+                "addressPrefix": "10.61.0.0/20",
+                "nextHopType": "VirtualAppliance",
+                "nextHopIpAddress": "10.61.0.12",
+                "hasBgpOverride": false
             }
         },
         {
-            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
-            "apiVersion": "2020-11-01",
-            "name": "[concat(parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'), '/Allow-Azure-Dev-Inbound')]",
+            "type": "Microsoft.Network/routeTables/routes",
+            "apiVersion": "2020-08-01",
+            "name": "[concat(parameters('routeTables_rt_name'), '/MGT')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'))]"
+                "[resourceId('Microsoft.Network/routeTables', parameters('routeTables_rt_name'))]"
             ],
             "properties": {
-                "protocol": "*",
-                "sourcePortRange": "*",
-                "destinationPortRange": "*",
-                "destinationAddressPrefix": "10.61.16.0/20",
-                "access": "Allow",
-                "priority": 4091,
-                "direction": "Inbound",
-                "sourcePortRanges": [],
-                "destinationPortRanges": [],
-                "sourceAddressPrefixes": [
-                    "10.62.16.0/20",
-                    "10.60.16.0/20"
-                ],
-                "destinationAddressPrefixes": []
+                "addressPrefix": "10.80.1.0/24",
+                "nextHopType": "VirtualAppliance",
+                "nextHopIpAddress": "10.61.0.12",
+                "hasBgpOverride": false
             }
         },
         {
-            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
-            "apiVersion": "2020-11-01",
-            "name": "[concat(parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'), '/Allow-AzureLoadBalancer')]",
+            "type": "Microsoft.Network/routeTables/routes",
+            "apiVersion": "2020-08-01",
+            "name": "[concat(parameters('routeTables_rt_name'), '/Default')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'))]"
+                "[resourceId('Microsoft.Network/routeTables', parameters('routeTables_rt_name'))]"
             ],
             "properties": {
-                "description": "Allow rule for Application Gateway LB",
-                "protocol": "*",
-                "sourcePortRange": "*",
-                "destinationPortRange": "*",
-                "sourceAddressPrefix": "AzureLoadBalancer",
-                "destinationAddressPrefix": "10.61.22.0/28",
-                "access": "Allow",
-                "priority": 4080,
-                "direction": "Inbound",
-                "sourcePortRanges": [],
-                "destinationPortRanges": [],
-                "sourceAddressPrefixes": [],
-                "destinationAddressPrefixes": []
-            }
-        },
-        {
-            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
-            "apiVersion": "2020-11-01",
-            "name": "[concat(parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'), '/Allow-AzureMonitor')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'))]"
-            ],
-            "properties": {
-                "protocol": "TCP",
-                "sourcePortRange": "*",
-                "destinationPortRange": "443",
-                "sourceAddressPrefix": "AzureMonitor",
-                "destinationAddressPrefix": "10.61.22.0/28",
-                "access": "Allow",
-                "priority": 4082,
-                "direction": "Inbound",
-                "sourcePortRanges": [],
-                "destinationPortRanges": [],
-                "sourceAddressPrefixes": [],
-                "destinationAddressPrefixes": []
-            }
-        },
-        {
-            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
-            "apiVersion": "2020-11-01",
-            "name": "[concat(parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'), '/Allow-GatewayManager')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'))]"
-            ],
-            "properties": {
-                "description": "Allow rule for Application Gateway LB",
-                "protocol": "*",
-                "sourcePortRange": "*",
-                "destinationPortRange": "65503-65534",
-                "sourceAddressPrefix": "GatewayManager",
-                "destinationAddressPrefix": "10.61.22.0/28",
-                "access": "Allow",
-                "priority": 4081,
-                "direction": "Inbound",
-                "sourcePortRanges": [],
-                "destinationPortRanges": [],
-                "sourceAddressPrefixes": [],
-                "destinationAddressPrefixes": []
-            }
-        },
-        {
-            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
-            "apiVersion": "2020-11-01",
-            "name": "[concat(parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'), '/Allow-HTTPS-AzureMetrics')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'))]"
-            ],
-            "properties": {
-                "protocol": "TCP",
-                "sourcePortRange": "*",
-                "destinationPortRange": "443",
-                "sourceAddressPrefix": "10.61.22.0/28",
-                "destinationAddressPrefix": "Internet",
-                "access": "Allow",
-                "priority": 4085,
-                "direction": "Outbound",
-                "sourcePortRanges": [],
-                "destinationPortRanges": [],
-                "sourceAddressPrefixes": [],
-                "destinationAddressPrefixes": []
-            }
-        },
-        {
-            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
-            "apiVersion": "2020-11-01",
-            "name": "[concat(parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'), '/Deny-All-Inbound-Override_Default')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'))]"
-            ],
-            "properties": {
-                "protocol": "*",
-                "sourcePortRange": "*",
-                "destinationPortRange": "*",
-                "sourceAddressPrefix": "Internet",
-                "destinationAddressPrefix": "*",
-                "access": "Deny",
-                "priority": 4096,
-                "direction": "Inbound",
-                "sourcePortRanges": [],
-                "destinationPortRanges": [],
-                "sourceAddressPrefixes": [],
-                "destinationAddressPrefixes": []
-            }
-        },
-        {
-            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
-            "apiVersion": "2020-11-01",
-            "name": "[concat(parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'), '/Deny-All-Outbound-Override_Default')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_auac_dev_lbagw_name'))]"
-            ],
-            "properties": {
-                "protocol": "*",
-                "sourcePortRange": "*",
-                "destinationPortRange": "*",
-                "sourceAddressPrefix": "*",
-                "destinationAddressPrefix": "Internet",
-                "access": "Deny",
-                "priority": 4096,
-                "direction": "Outbound",
-                "sourcePortRanges": [],
-                "destinationPortRanges": [],
-                "sourceAddressPrefixes": [],
-                "destinationAddressPrefixes": []
+                "addressPrefix": "0.0.0.0/0",
+                "nextHopType": "Internet",
+                "hasBgpOverride": false
             }
         }
     ]
